@@ -15,5 +15,7 @@ namespace InforumBackend.Data
         }
 
         public DbSet<InforumBackend.Models.Home> Home { get; set; }
+
+        public DbSet<InforumBackend.Models.ContactForm> ContactForm { get; set; }
     }
 }
