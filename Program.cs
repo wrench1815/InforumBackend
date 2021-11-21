@@ -1,4 +1,10 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using InforumBackend.Data;
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<InforumBackendContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("InforumBackendContext")));
 
 // Add services to the container.
 
