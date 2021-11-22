@@ -11,8 +11,18 @@ namespace InforumBackend.Data {
 			: base(options) {
 		}
 
-		public DbSet<InforumBackend.Models.Home> Home { get; set; }
+		public DbSet<Answer> Answer { get; set; }
 
-		public DbSet<InforumBackend.Models.ContactForm> ContactForm { get; set; }
+		public DbSet<BlogPost> BlogPost { get; set; }
+
+		public DbSet<Category> Category { get; set; }
+
+		public DbSet<Comment> Comment { get; set; }
+
+		public DbSet<ContactForm> ContactForm { get; set; }
+
+		public DbSet<Home> Home { get; set; }
+
+		public DbSet<Query> Query { get; set; }
 	}
 }
