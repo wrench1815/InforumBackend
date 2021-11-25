@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿
 
 namespace InforumBackend.Models {
 	public class BlogPost {
@@ -17,6 +17,8 @@ namespace InforumBackend.Models {
 		// TODO:
 		//author_id
 		//category_id
+
+		public Category? Category { get; set; }
 
 		public BlogPost() {
 			DatePosted = DateTime.Now;

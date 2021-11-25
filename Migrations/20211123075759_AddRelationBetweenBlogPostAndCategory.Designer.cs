@@ -4,6 +4,7 @@ using InforumBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InforumBackend.Migrations
 {
     [DbContext(typeof(InforumBackendContext))]
-    partial class InforumBackendContextModelSnapshot : ModelSnapshot
+    [Migration("20211123075759_AddRelationBetweenBlogPostAndCategory")]
+    partial class AddRelationBetweenBlogPostAndCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -184,7 +186,7 @@ namespace InforumBackend.Migrations
             modelBuilder.Entity("InforumBackend.Models.BlogPost", b =>
                 {
                     b.HasOne("InforumBackend.Models.Category", "Category")
-                        .WithMany("BlogPost")
+                        .WithMany("BlogPosts")
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
@@ -192,7 +194,7 @@ namespace InforumBackend.Migrations
 
             modelBuilder.Entity("InforumBackend.Models.Category", b =>
                 {
-                    b.Navigation("BlogPost");
+                    b.Navigation("BlogPosts");
                 });
 #pragma warning restore 612, 618
         }

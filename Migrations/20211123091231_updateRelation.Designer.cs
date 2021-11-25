@@ -4,6 +4,7 @@ using InforumBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InforumBackend.Migrations
 {
     [DbContext(typeof(InforumBackendContext))]
-    partial class InforumBackendContextModelSnapshot : ModelSnapshot
+    [Migration("20211123091231_updateRelation")]
+    partial class updateRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,7 +51,7 @@ namespace InforumBackend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
-                    b.Property<long?>("CategoryId")
+                    b.Property<long>("CategoryId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("DatePosted")
@@ -184,15 +186,17 @@ namespace InforumBackend.Migrations
             modelBuilder.Entity("InforumBackend.Models.BlogPost", b =>
                 {
                     b.HasOne("InforumBackend.Models.Category", "Category")
-                        .WithMany("BlogPost")
-                        .HasForeignKey("CategoryId");
+                        .WithMany("BlogPosts")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
                 });
 
             modelBuilder.Entity("InforumBackend.Models.Category", b =>
                 {
-                    b.Navigation("BlogPost");
+                    b.Navigation("BlogPosts");
                 });
 #pragma warning restore 612, 618
         }
