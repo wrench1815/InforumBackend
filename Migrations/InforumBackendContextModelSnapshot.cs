@@ -38,7 +38,7 @@ namespace InforumBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Answer");
+                    b.ToTable("Answer", (string)null);
                 });
 
             modelBuilder.Entity("InforumBackend.Models.BlogPost", b =>
@@ -49,7 +49,7 @@ namespace InforumBackend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
-                    b.Property<long?>("CategoryId")
+                    b.Property<long>("CategoryId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("DatePosted")
@@ -71,7 +71,7 @@ namespace InforumBackend.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("BlogPost");
+                    b.ToTable("BlogPost", (string)null);
                 });
 
             modelBuilder.Entity("InforumBackend.Models.Category", b =>
@@ -87,7 +87,7 @@ namespace InforumBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Category");
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("InforumBackend.Models.Comment", b =>
@@ -106,7 +106,7 @@ namespace InforumBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comment", (string)null);
                 });
 
             modelBuilder.Entity("InforumBackend.Models.ContactForm", b =>
@@ -131,7 +131,7 @@ namespace InforumBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContactForm");
+                    b.ToTable("ContactForm", (string)null);
                 });
 
             modelBuilder.Entity("InforumBackend.Models.Home", b =>
@@ -153,7 +153,7 @@ namespace InforumBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Home");
+                    b.ToTable("Home", (string)null);
                 });
 
             modelBuilder.Entity("InforumBackend.Models.Query", b =>
@@ -178,21 +178,18 @@ namespace InforumBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Query");
+                    b.ToTable("Query", (string)null);
                 });
 
             modelBuilder.Entity("InforumBackend.Models.BlogPost", b =>
                 {
                     b.HasOne("InforumBackend.Models.Category", "Category")
-                        .WithMany("BlogPost")
-                        .HasForeignKey("CategoryId");
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("InforumBackend.Models.Category", b =>
-                {
-                    b.Navigation("BlogPost");
                 });
 #pragma warning restore 612, 618
         }

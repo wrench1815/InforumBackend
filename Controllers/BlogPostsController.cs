@@ -8,84 +8,102 @@ using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using InforumBackend.Models;
 
-namespace InforumBackend.Controllers {
-	[Route("api/[controller]")]
-	[ApiController]
-	public class BlogPostsController : ControllerBase {
-		private readonly InforumBackendContext _context;
+namespace InforumBackend.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class BlogPostsController : ControllerBase
+    {
+        private readonly InforumBackendContext _context;
 
-		public BlogPostsController(InforumBackendContext context) {
-			_context = context;
-		}
+        public BlogPostsController(InforumBackendContext context)
+        {
+            _context = context;
+        }
 
-		// GET: api/BlogPosts
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<BlogPost>>> GetBlogPost() {
-			return await _context.BlogPost.ToListAsync();
-		}
+        // GET: api/BlogPosts
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<BlogPost>>> GetBlogPost()
+        {
 
-		// GET: api/BlogPosts/5
-		[HttpGet("{id}")]
-		public async Task<ActionResult<BlogPost>> GetBlogPost(long id) {
-			var blogPost = await _context.BlogPost.FindAsync(id);
+            return await _context.BlogPost.Include(bp => bp.Category).ToListAsync();
+        }
 
-			if (blogPost == null) {
-				return NotFound();
-			}
+        // GET: api/BlogPosts/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BlogPost>> GetBlogPost(long id)
+        {
+            var blogPost = await _context.BlogPost.Include(bp => bp.Category).FirstOrDefaultAsync(i => i.Id == id);
 
-			return blogPost;
-		}
+            if (blogPost == null)
+            {
+                return NotFound();
+            }
 
-		// PUT: api/BlogPosts/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-		[HttpPut("{id}")]
-		public async Task<IActionResult> PutBlogPost(long id, BlogPost blogPost) {
-			if (id != blogPost.Id) {
-				return BadRequest();
-			}
+            return blogPost;
+        }
 
-			_context.Entry(blogPost).State = EntityState.Modified;
+        // PUT: api/BlogPosts/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutBlogPost(long id, BlogPost blogPost)
+        {
+            if (id != blogPost.Id)
+            {
+                return BadRequest();
+            }
 
-			try {
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException) {
-				if (!BlogPostExists(id)) {
-					return NotFound();
-				} else {
-					throw;
-				}
-			}
+            _context.Entry(blogPost).State = EntityState.Modified;
 
-			return NoContent();
-		}
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BlogPostExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-		// POST: api/BlogPosts
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-		[HttpPost]
-		public async Task<ActionResult<BlogPost>> PostBlogPost(BlogPost blogPost) {
-			_context.BlogPost.Add(blogPost);
-			await _context.SaveChangesAsync();
+            return NoContent();
+        }
 
-			return CreatedAtAction("GetBlogPost", new { id = blogPost.Id }, blogPost);
-		}
+        // POST: api/BlogPosts
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<BlogPost>> PostBlogPost(BlogPost blogPost)
+        {
+            _context.BlogPost.Add(blogPost);
+            await _context.SaveChangesAsync();
 
-		// DELETE: api/BlogPosts/5
-		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteBlogPost(long id) {
-			var blogPost = await _context.BlogPost.FindAsync(id);
-			if (blogPost == null) {
-				return NotFound();
-			}
+            return CreatedAtAction("GetBlogPost", new { id = blogPost.Id }, blogPost);
+        }
 
-			_context.BlogPost.Remove(blogPost);
-			await _context.SaveChangesAsync();
+        // DELETE: api/BlogPosts/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBlogPost(long id)
+        {
+            var blogPost = await _context.BlogPost.FindAsync(id);
+            if (blogPost == null)
+            {
+                return NotFound();
+            }
 
-			return NoContent();
-		}
+            _context.BlogPost.Remove(blogPost);
+            await _context.SaveChangesAsync();
 
-		private bool BlogPostExists(long id) {
-			return _context.BlogPost.Any(e => e.Id == id);
-		}
-	}
+            return NoContent();
+        }
+
+        private bool BlogPostExists(long id)
+        {
+            return _context.BlogPost.Any(e => e.Id == id);
+        }
+    }
 }

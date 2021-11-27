@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InforumBackend.Migrations
 {
     [DbContext(typeof(InforumBackendContext))]
-    [Migration("20211122165847_RemoveRelations")]
-    partial class RemoveRelations
+    [Migration("20211127153949_InitalMigrations")]
+    partial class InitalMigrations
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,6 +24,25 @@ namespace InforumBackend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("InforumBackend.Models.Answer", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DatePosted")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Answer");
+                });
+
             modelBuilder.Entity("InforumBackend.Models.BlogPost", b =>
                 {
                     b.Property<long>("Id")
@@ -31,6 +50,9 @@ namespace InforumBackend.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<long>("CategoryId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("DatePosted")
                         .HasColumnType("datetime2");
@@ -49,6 +71,8 @@ namespace InforumBackend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.ToTable("BlogPost");
                 });
 
@@ -66,6 +90,25 @@ namespace InforumBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Category");
+                });
+
+            modelBuilder.Entity("InforumBackend.Models.Comment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DatePosted")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Comment");
                 });
 
             modelBuilder.Entity("InforumBackend.Models.ContactForm", b =>
@@ -113,6 +156,42 @@ namespace InforumBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Home");
+                });
+
+            modelBuilder.Entity("InforumBackend.Models.Query", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("DatePosted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Slug")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Query");
+                });
+
+            modelBuilder.Entity("InforumBackend.Models.BlogPost", b =>
+                {
+                    b.HasOne("InforumBackend.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
                 });
 #pragma warning restore 612, 618
         }

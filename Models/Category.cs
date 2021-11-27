@@ -1,9 +1,10 @@
-﻿namespace InforumBackend.Models {
-	public class Category {
-		public long Id { get; set; }
-		public string? Name { get; set; }
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-		public ICollection<BlogPost>? BlogPost { get; set; }
-
-	}
+namespace InforumBackend.Models
+{
+    public class Category
+    {
+        public long Id { get; set; }
+        public string Name { get; set; }
+    }
 }
