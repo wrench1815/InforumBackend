@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using InforumBackend.Models;
+using System.Text.RegularExpressions;
 
 namespace InforumBackend.Controllers
 {
@@ -79,10 +80,21 @@ namespace InforumBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<BlogPost>> PostBlogPost(BlogPost blogPost)
         {
+            // add a new BlogPost object
             _context.BlogPost.Add(blogPost);
+            await _context.SaveChangesAsync(); // save the object
+
+            // Get Title and Id from the saved BlogPost object and generate slug
+            var slug = generateSlug(blogPost.Title, blogPost.Id);
+
+            // assign generated slug to the BlogPost object
+            blogPost.Slug = slug;
+
+            // update and save the object
+            _context.Update(blogPost);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBlogPost", new { id = blogPost.Id }, blogPost);
+            return StatusCode(201);
         }
 
         // DELETE: api/BlogPosts/5
@@ -104,6 +116,30 @@ namespace InforumBackend.Controllers
         private bool BlogPostExists(long id)
         {
             return _context.BlogPost.Any(e => e.Id == id);
+        }
+
+        /// <summary>
+        /// Method to generate a slug from title and id from the BlogPost object
+        /// removes all the special characters and spaces and replaces them with dashes(-)
+        /// concatenates cleaned title and id and returns the slug in format of title-id
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="id"></param>
+        /// <returns>slug(title-id)</returns>
+        private string generateSlug(string title, long id)
+        {
+            var slug = title.ToLower();
+
+            // remove all uneeded characters
+            slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            // remove multiple spaces
+            slug = Regex.Replace(slug, @"\s+", " ").Trim();
+            // replace spaces with dashes(-)
+            slug = Regex.Replace(slug, @"\s", "-");
+            // concatenate slug and id
+            slug = slug + "-" + id;
+
+            return slug;
         }
     }
 }
