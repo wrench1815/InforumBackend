@@ -9,5 +9,7 @@ Backend for Inforum
 db string example
 
 ```json
-https://github.com/PowerShell/PowerShell/releases
+{
+  "ConnectionStrings:InforumBackendContext": "Server=host;Database=DBName;User=user;Password=Test@123;"
+}
 ```
