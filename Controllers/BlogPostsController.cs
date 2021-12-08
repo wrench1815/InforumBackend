@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using InforumBackend.Models;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
+using InforumBackend.Authentication;
 
 namespace InforumBackend.Controllers
 {
@@ -77,6 +79,7 @@ namespace InforumBackend.Controllers
 
         // POST: api/BlogPosts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<BlogPost>> PostBlogPost(BlogPost blogPost)
         {
