@@ -26,22 +26,37 @@ namespace InforumBackend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BlogPost>>> GetBlogPost()
         {
+            try
+            {
+                return await _context.BlogPost.Include(bp => bp.Category).ToListAsync();
+            }
+            catch (System.Exception)
+            {
 
-            return await _context.BlogPost.Include(bp => bp.Category).ToListAsync();
+                return BadRequest();
+            }
         }
 
         // GET: api/BlogPosts/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BlogPost>> GetBlogPost(long id)
         {
-            var blogPost = await _context.BlogPost.Include(bp => bp.Category).FirstOrDefaultAsync(i => i.Id == id);
-
-            if (blogPost == null)
+            try
             {
-                return NotFound();
-            }
+                var blogPost = await _context.BlogPost.Include(bp => bp.Category).FirstOrDefaultAsync(i => i.Id == id);
 
-            return blogPost;
+                if (blogPost == null)
+                {
+                    return NotFound();
+                }
+
+                return blogPost;
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
         }
 
         // PUT: api/BlogPosts/5
@@ -53,6 +68,9 @@ namespace InforumBackend.Controllers
             {
                 return BadRequest();
             }
+
+            // generate slug based on the PUT data
+            blogPost.Slug = generateSlug(blogPost.Title, id);
 
             _context.Entry(blogPost).State = EntityState.Modified;
 
@@ -68,11 +86,11 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
-                    throw;
+                    return BadRequest();
                 }
             }
 
-            return NoContent();
+            return StatusCode(201);
         }
 
         // POST: api/BlogPosts
@@ -80,21 +98,30 @@ namespace InforumBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<BlogPost>> PostBlogPost(BlogPost blogPost)
         {
-            // add a new BlogPost object
-            _context.BlogPost.Add(blogPost);
-            await _context.SaveChangesAsync(); // save the object
+            try
+            {
+                // add a new BlogPost object
+                _context.BlogPost.Add(blogPost);
+                await _context.SaveChangesAsync(); // save the object
 
-            // Get Title and Id from the saved BlogPost object and generate slug
-            var slug = generateSlug(blogPost.Title, blogPost.Id);
+                // Get Title and Id from the saved BlogPost object and generate slug
+                var slug = generateSlug(blogPost.Title, blogPost.Id);
 
-            // assign generated slug to the BlogPost object
-            blogPost.Slug = slug;
+                // assign generated slug to the BlogPost object
+                blogPost.Slug = slug;
 
-            // update and save the object
-            _context.Update(blogPost);
-            await _context.SaveChangesAsync();
+                // update and save the object
+                _context.Update(blogPost);
 
-            return StatusCode(201);
+                await _context.SaveChangesAsync();
+
+                return StatusCode(201);
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
         }
 
         // DELETE: api/BlogPosts/5
@@ -107,10 +134,18 @@ namespace InforumBackend.Controllers
                 return NotFound();
             }
 
-            _context.BlogPost.Remove(blogPost);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.BlogPost.Remove(blogPost);
+                await _context.SaveChangesAsync();
 
-            return NoContent();
+                return Ok();
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
         }
 
         private bool BlogPostExists(long id)
