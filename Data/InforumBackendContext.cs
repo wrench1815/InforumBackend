@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using InforumBackend.Models;
-
+using InforumBackend.Authentication;
 namespace InforumBackend.Data
 {
-    public class InforumBackendContext : DbContext
+    public class InforumBackendContext : IdentityDbContext<ApplicationUser>
     {
         public InforumBackendContext(DbContextOptions<InforumBackendContext> options)
             : base(options)
@@ -27,5 +28,10 @@ namespace InforumBackend.Data
         public DbSet<Home> Home { get; set; }
 
         public DbSet<Query> Query { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+        }
     }
 }
