@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using InforumBackend.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InforumBackend.Controllers
 {
@@ -44,6 +40,7 @@ namespace InforumBackend.Controllers
 
         // PUT: api/Categories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Roles = "Editor, Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCategory(long id, Category category)
         {
@@ -75,6 +72,7 @@ namespace InforumBackend.Controllers
 
         // POST: api/Categories
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Roles = "Editor, Admin")]
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
@@ -85,6 +83,7 @@ namespace InforumBackend.Controllers
         }
 
         // DELETE: api/Categories/5
+        [Authorize(Roles = "Editor, Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(long id)
         {
