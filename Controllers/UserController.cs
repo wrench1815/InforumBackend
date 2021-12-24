@@ -2,6 +2,7 @@ using InforumBackend.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -15,13 +16,13 @@ namespace InforumBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthenticateController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration _configuration;
 
-        public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public UserController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
@@ -235,6 +236,57 @@ namespace InforumBackend.Controllers
                 Status = "Success",
                 Message = "Editor created successfully!"
             });
+        }
+
+        // List all Registered Users
+        [HttpGet]
+        [Route("list")]
+        public async Task<IActionResult> GetUsers()
+        {
+            try
+            {
+                var users = await userManager.Users.ToListAsync();
+
+                return Ok(users);
+            }
+            catch (System.Exception)
+            {
+
+                return StatusCode(StatusCodes.Status400BadRequest, new Response
+                {
+                    Status = "Error",
+                    Message = "Error retrieving users"
+                });
+            }
+        }
+
+        // List Single User as per the id
+        [HttpGet("single/{id}")]
+        public async Task<IActionResult> GetSingleUser(String id)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound(new Response
+                    {
+                        Status = "Error",
+                        Message = "User not found"
+                    });
+                }
+                return Ok(user);
+            }
+            catch (System.Exception)
+            {
+
+                return StatusCode(StatusCodes.Status400BadRequest, new Response
+                {
+                    Status = "Error",
+                    Message = "User not found"
+                });
+            }
         }
 
     }
