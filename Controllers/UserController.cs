@@ -1,16 +1,12 @@
 using InforumBackend.Authentication;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace InforumBackend.Controllers
 {
@@ -29,6 +25,7 @@ namespace InforumBackend.Controllers
             _configuration = configuration;
         }
 
+        // Logs user in and returns a JWT token
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -65,9 +62,10 @@ namespace InforumBackend.Controllers
                     expiration = token.ValidTo
                 });
             }
-            return Unauthorized();
+            return NotFound(new { message = "Email or password is incorrect" });
         }
 
+        // Register a new user
         [HttpPost]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
@@ -131,7 +129,7 @@ namespace InforumBackend.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest, new Response
                 {
                     Status = "Error",
-                    Message = "Admin already exists!"
+                    Message = "User already exists!"
                 });
             }
 
@@ -191,7 +189,7 @@ namespace InforumBackend.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest, new Response
                 {
                     Status = "Error",
-                    Message = "Editor already exists!"
+                    Message = "User already exists!"
                 });
             }
 
@@ -239,6 +237,7 @@ namespace InforumBackend.Controllers
         }
 
         // List all Registered Users
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("list")]
         public async Task<IActionResult> GetUsers()
@@ -261,8 +260,10 @@ namespace InforumBackend.Controllers
         }
 
         // List Single User as per the id
-        [HttpGet("single/{id}")]
-        public async Task<IActionResult> GetSingleUser(String id)
+        [Authorize]
+        [HttpGet]
+        [Route("single/{id}")]
+        public async Task<IActionResult> GetSingleUser(string id)
         {
             try
             {
@@ -289,6 +290,85 @@ namespace InforumBackend.Controllers
             }
         }
 
+        // Update User Data
+        [Authorize]
+        [HttpPatch("update/{id}")]
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUser model)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(id);
+
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.Gender = model.Gender;
+                user.Email = model.Email;
+                user.UserName = model.Email;
+
+                var result = await userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest, new Response
+                    {
+                        Status = "Error",
+                        Message = "Failed to Update User! Please check user details and try again."
+                    });
+                }
+
+                return Ok(new Response
+                {
+                    Status = "Success",
+                    Message = "User Updated Successfully!"
+                });
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new Response
+                {
+                    Status = "Error",
+                    Message = "Error updating user"
+                });
+            }
+        }
+
+        // Change Password
+        [Authorize]
+        [HttpPost("change-password/{id}")]
+        public async Task<IActionResult> ChangePassword(string id, [FromBody] UpdatePassword model)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(id);
+
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+                var result = await userManager.ResetPasswordAsync(user, token, model.Password);
+
+                if (!result.Succeeded)
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest, new Response
+                    {
+                        Status = "Error",
+                        Message = "Failed to Change Password! Please try again."
+                    });
+                }
+
+                return Ok(new Response
+                {
+                    Status = "Success",
+                    Message = "Password Changed Successfully!"
+                });
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new Response
+                {
+                    Status = "Error",
+                    Message = "Error updating Password"
+                });
+            }
+        }
     }
 
 }
