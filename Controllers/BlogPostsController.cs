@@ -4,6 +4,7 @@ using InforumBackend.Data;
 using InforumBackend.Models;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json;
 
 namespace InforumBackend.Controllers
 {
@@ -20,11 +21,22 @@ namespace InforumBackend.Controllers
 
         // GET: api/BlogPosts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BlogPost>>> GetBlogPost()
+        public async Task<ActionResult<IEnumerable<BlogPost>>> GetBlogPost([FromQuery] PageParameter pageParameter)
         {
             try
             {
-                return await _context.BlogPost.Include(bp => bp.Category).ToListAsync();
+                var blogPosts = _context.BlogPost.Include(bp => bp.Category).OrderByDescending(bp => bp.DatePosted);
+
+                var paginationMetadata = new PaginationMetadata(blogPosts.Count(), pageParameter.PageNumber, pageParameter.PageSize);
+                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
+
+                var posts = await blogPosts.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
+
+                return Ok(new
+                {
+                    posts = posts,
+                    pagination = paginationMetadata
+                });
             }
             catch (System.Exception)
             {
