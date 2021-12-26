@@ -1,9 +1,11 @@
 using InforumBackend.Authentication;
+using InforumBackend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -240,13 +242,23 @@ namespace InforumBackend.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("list")]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] PageParameter pageParameter)
         {
             try
             {
-                var users = await userManager.Users.ToListAsync();
+                var usersList = userManager.Users.OrderByDescending(ul => ul.DateJoined);
 
-                return Ok(users);
+                var paginationMetadata = new PaginationMetadata(usersList.Count(), pageParameter.PageNumber, pageParameter.PageSize);
+                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
+
+                var users = await usersList.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
+
+
+                return Ok(new
+                {
+                    users = users,
+                    pagination = paginationMetadata
+                });
             }
             catch (System.Exception)
             {
