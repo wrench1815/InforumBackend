@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using InforumBackend.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InforumBackend.Controllers
 {
@@ -22,6 +23,7 @@ namespace InforumBackend.Controllers
         }
 
         // GET: api/ContactForms
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ContactForm>>> GetContactForm()
         {
@@ -29,6 +31,7 @@ namespace InforumBackend.Controllers
         }
 
         // GET: api/ContactForms/5
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<ContactForm>> GetContactForm(long id)
         {
@@ -44,6 +47,7 @@ namespace InforumBackend.Controllers
 
         // PUT: api/ContactForms/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutContactForm(long id, ContactForm contactForm)
         {
@@ -85,6 +89,7 @@ namespace InforumBackend.Controllers
         }
 
         // DELETE: api/ContactForms/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteContactForm(long id)
         {

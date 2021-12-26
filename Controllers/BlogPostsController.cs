@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using InforumBackend.Models;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
-using InforumBackend.Authentication;
 
 namespace InforumBackend.Controllers
 {
@@ -63,6 +57,7 @@ namespace InforumBackend.Controllers
 
         // PUT: api/BlogPosts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Roles = "Editor, Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBlogPost(long id, BlogPost blogPost)
         {
@@ -97,7 +92,7 @@ namespace InforumBackend.Controllers
 
         // POST: api/BlogPosts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [Authorize]
+        [Authorize(Roles = "Editor, Admin")]
         [HttpPost]
         public async Task<ActionResult<BlogPost>> PostBlogPost(BlogPost blogPost)
         {
@@ -128,6 +123,7 @@ namespace InforumBackend.Controllers
         }
 
         // DELETE: api/BlogPosts/5
+        [Authorize(Roles = "Editor, Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBlogPost(long id)
         {
