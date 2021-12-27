@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using InforumBackend.Models;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json;
 
 namespace InforumBackend.Controllers
 {
@@ -25,9 +26,20 @@ namespace InforumBackend.Controllers
         // GET: api/ContactForms
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ContactForm>>> GetContactForm()
+        public async Task<ActionResult<IEnumerable<ContactForm>>> GetContactForm([FromQuery] PageParameter pageParameter)
         {
-            return await _context.ContactForm.ToListAsync();
+            var contactForms = _context.ContactForm.OrderByDescending(cf => cf.CreatedOn);
+
+            var paginationMetadata = new PaginationMetadata(contactForms.Count(), pageParameter.PageNumber, pageParameter.PageSize);
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
+
+            var forms = await contactForms.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
+
+            return Ok(new
+            {
+                forms = forms,
+                pagination = paginationMetadata
+            });
         }
 
         // GET: api/ContactForms/5
