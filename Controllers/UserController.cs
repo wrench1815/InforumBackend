@@ -409,6 +409,37 @@ namespace InforumBackend.Controllers
                 });
             }
         }
+
+        // Returns currently logged in user Info as per Token
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
+        {
+            try
+            {
+                var user = await userManager.FindByNameAsync(User.Identity.Name);
+
+                if (user == null)
+                {
+                    return NotFound(new Response
+                    {
+                        Status = "Error",
+                        Message = "User not found"
+                    });
+                }
+
+                return Ok(user);
+            }
+            catch (System.Exception)
+            {
+
+                return StatusCode(StatusCodes.Status400BadRequest, new Response
+                {
+                    Status = "Error",
+                    Message = "User not found"
+                });
+            }
+        }
     }
 
 }
