@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using Microsoft.AspNetCore.Identity;
 using System.Text;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 
 // Custom CORS Rule
@@ -32,7 +34,38 @@ builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(
+    s =>
+    {
+        s.SwaggerDoc("v1", new OpenApiInfo { Title = "Inforum Backend API", Version = "v1" });
+        s.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description = @"JWT Authorization header using the Bearer scheme.<br/>Enter 'Bearer' [space] and then your token in the text input below.<br/>Example: <code>'Bearer 12345abcdef'</code>",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+        s.AddSecurityRequirement(new OpenApiSecurityRequirement()
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    },
+                    Scheme = "oauth2",
+                    Name = "Bearer",
+                    In = ParameterLocation.Header,
+
+                },
+                new List<string>()
+            }
+        });
+    }
+);
 
 // Hook Core Admin
 builder.Services.AddCoreAdmin();

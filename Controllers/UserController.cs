@@ -60,6 +60,8 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
+                    id = user.Id,
+                    role = userManager.GetRolesAsync(user).Result.FirstOrDefault(),
                     token = new JwtSecurityTokenHandler().WriteToken(token),
                     expiration = token.ValidTo
                 });
@@ -289,6 +291,7 @@ namespace InforumBackend.Controllers
                         Message = "User not found"
                     });
                 }
+
                 return Ok(user);
             }
             catch (System.Exception)
@@ -311,27 +314,40 @@ namespace InforumBackend.Controllers
             {
                 var user = await userManager.FindByIdAsync(id);
 
-                user.FirstName = model.FirstName;
-                user.LastName = model.LastName;
-                user.Gender = model.Gender;
-                user.Email = model.Email;
-                user.UserName = model.Email;
+                var requestUser = await userManager.FindByNameAsync(User.Identity.Name);
 
-                var result = await userManager.UpdateAsync(user);
+                var requestUserRole = await userManager.GetRolesAsync(requestUser);
 
-                if (!result.Succeeded)
+                if (requestUser.UserName == user.UserName || requestUserRole.Contains(UserRoles.Admin))
                 {
-                    return StatusCode(StatusCodes.Status400BadRequest, new Response
+                    user.FirstName = model.FirstName;
+                    user.LastName = model.LastName;
+                    user.Gender = model.Gender;
+                    user.Email = model.Email;
+                    user.UserName = model.Email;
+
+                    var result = await userManager.UpdateAsync(user);
+
+                    if (!result.Succeeded)
                     {
-                        Status = "Error",
-                        Message = "Failed to Update User! Please check user details and try again."
+                        return StatusCode(StatusCodes.Status400BadRequest, new Response
+                        {
+                            Status = "Error",
+                            Message = "Failed to Update User! Please check user details and try again."
+                        });
+                    }
+
+                    return Ok(new Response
+                    {
+                        Status = "Success",
+                        Message = "User Updated Successfully!"
                     });
                 }
 
-                return Ok(new Response
+                return StatusCode(StatusCodes.Status403Forbidden, new Response
                 {
-                    Status = "Success",
-                    Message = "User Updated Successfully!"
+                    Status = "Error",
+                    Message = "You are not authorized to update this user!"
                 });
             }
             catch (System.Exception)
@@ -353,23 +369,35 @@ namespace InforumBackend.Controllers
             {
                 var user = await userManager.FindByIdAsync(id);
 
-                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                var requestUser = await userManager.FindByNameAsync(User.Identity.Name);
 
-                var result = await userManager.ResetPasswordAsync(user, token, model.Password);
+                var requestUserRole = await userManager.GetRolesAsync(requestUser);
 
-                if (!result.Succeeded)
+                if (requestUser.UserName == user.UserName || requestUserRole.Contains(UserRoles.Admin))
                 {
-                    return StatusCode(StatusCodes.Status400BadRequest, new Response
+                    var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+                    var result = await userManager.ResetPasswordAsync(user, token, model.Password);
+
+                    if (!result.Succeeded)
                     {
-                        Status = "Error",
-                        Message = "Failed to Change Password! Please try again."
+                        return StatusCode(StatusCodes.Status400BadRequest, new Response
+                        {
+                            Status = "Error",
+                            Message = "Failed to Change Password! Please try again."
+                        });
+                    }
+
+                    return Ok(new Response
+                    {
+                        Status = "Success",
+                        Message = "Password Changed Successfully!"
                     });
                 }
-
-                return Ok(new Response
+                return StatusCode(StatusCodes.Status403Forbidden, new Response
                 {
-                    Status = "Success",
-                    Message = "Password Changed Successfully!"
+                    Status = "Error",
+                    Message = "You are not authorized to perform this action!"
                 });
             }
             catch (System.Exception)
