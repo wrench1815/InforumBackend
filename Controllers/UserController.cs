@@ -282,6 +282,7 @@ namespace InforumBackend.Controllers
             try
             {
                 var user = await userManager.FindByIdAsync(id);
+                var userRole = await userManager.GetRolesAsync(user);
 
                 if (user == null)
                 {
@@ -292,7 +293,11 @@ namespace InforumBackend.Controllers
                     });
                 }
 
-                return Ok(user);
+                return Ok(new
+                {
+                    user = user,
+                    userRole = userRole
+                });
             }
             catch (System.Exception)
             {
@@ -418,6 +423,7 @@ namespace InforumBackend.Controllers
             try
             {
                 var user = await userManager.FindByNameAsync(User.Identity.Name);
+                var userRole = await userManager.GetRolesAsync(user);
 
                 if (user == null)
                 {
@@ -428,7 +434,11 @@ namespace InforumBackend.Controllers
                     });
                 }
 
-                return Ok(user);
+                return Ok(new
+                {
+                    user = user,
+                    userRole = userRole
+                });
             }
             catch (System.Exception)
             {
