@@ -282,6 +282,7 @@ namespace InforumBackend.Controllers
             try
             {
                 var user = await userManager.FindByIdAsync(id);
+                var userRole = await userManager.GetRolesAsync(user);
 
                 if (user == null)
                 {
@@ -292,7 +293,11 @@ namespace InforumBackend.Controllers
                     });
                 }
 
-                return Ok(user);
+                return Ok(new
+                {
+                    user = user,
+                    userRole = userRole
+                });
             }
             catch (System.Exception)
             {
@@ -406,6 +411,42 @@ namespace InforumBackend.Controllers
                 {
                     Status = "Error",
                     Message = "Error updating Password"
+                });
+            }
+        }
+
+        // Returns currently logged in user Info as per Token
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
+        {
+            try
+            {
+                var user = await userManager.FindByNameAsync(User.Identity.Name);
+                var userRole = await userManager.GetRolesAsync(user);
+
+                if (user == null)
+                {
+                    return NotFound(new Response
+                    {
+                        Status = "Error",
+                        Message = "User not found"
+                    });
+                }
+
+                return Ok(new
+                {
+                    user = user,
+                    userRole = userRole
+                });
+            }
+            catch (System.Exception)
+            {
+
+                return StatusCode(StatusCodes.Status400BadRequest, new Response
+                {
+                    Status = "Error",
+                    Message = "User not found"
                 });
             }
         }
