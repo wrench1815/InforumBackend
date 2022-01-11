@@ -24,13 +24,11 @@ namespace InforumBackend.Models
         // Date the Blog Post was Added
         public DateTime DatePosted { get; set; }
 
-        // TODO:
-        //author_id
-
         // CategoryId as a Relational Field
         [ForeignKey("Category")]
         public long CategoryId { get; set; }
 
+        // AuthorId as a Relational Field
         [ForeignKey("Author")]
         public string AuthorId { get; set; }
 
