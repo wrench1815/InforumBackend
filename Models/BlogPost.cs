@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using InforumBackend.Authentication;
 
 namespace InforumBackend.Models
 {
@@ -30,10 +31,16 @@ namespace InforumBackend.Models
         [ForeignKey("Category")]
         public long CategoryId { get; set; }
 
-        // Category as a Navigation Property Justifying the Relation
-        // Declared virtual for lazy loading Related Data
+        [ForeignKey("Author")]
+        public string AuthorId { get; set; }
+
+        // Navigation Properties
+
+        // Declared virtual Category Property for lazy loading Related Data
         public virtual Category Category { get; set; }
 
+        // Declared virtual Author Property for lazy loading Related Data
+        public virtual ApplicationUser Author { get; set; }
         public BlogPost()
         {
             DatePosted = DateTime.Now;
