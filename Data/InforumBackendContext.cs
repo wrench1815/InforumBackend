@@ -29,6 +29,8 @@ namespace InforumBackend.Data
 
         public DbSet<Query> Query { get; set; }
 
+        public DbSet<SubComment> SubComment { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
