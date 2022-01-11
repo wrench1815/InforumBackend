@@ -25,7 +25,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var blogPosts = _context.BlogPost.Include(bp => bp.Category).OrderByDescending(bp => bp.DatePosted);
+                var blogPosts = _context.BlogPost.Include(bp => bp.Category).Include(bp => bp.Author).OrderByDescending(bp => bp.DatePosted);
 
                 var paginationMetadata = new PaginationMetadata(blogPosts.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
@@ -51,14 +51,18 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var blogPost = await _context.BlogPost.Include(bp => bp.Category).FirstOrDefaultAsync(i => i.Id == id);
+                var blogPost = await _context.BlogPost.Include(bp => bp.Category).Include(bp => bp.Author).FirstOrDefaultAsync(i => i.Id == id);
 
                 if (blogPost == null)
                 {
-                    return NotFound();
+                    return NotFound(new
+                    {
+                        Status = "Error",
+                        Message = "Post not found"
+                    });
                 }
 
-                return blogPost;
+                return Ok(blogPost);
             }
             catch (System.Exception)
             {
@@ -142,7 +146,12 @@ namespace InforumBackend.Controllers
             var blogPost = await _context.BlogPost.FindAsync(id);
             if (blogPost == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    Status = "Error",
+                    Message = "Post not found"
+
+                });
             }
 
             try
@@ -150,7 +159,11 @@ namespace InforumBackend.Controllers
                 _context.BlogPost.Remove(blogPost);
                 await _context.SaveChangesAsync();
 
-                return Ok();
+                return Ok(new
+                {
+                    Status = "Success",
+                    Message = "Post deleted successfully"
+                });
             }
             catch (System.Exception)
             {
