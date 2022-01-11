@@ -21,10 +21,10 @@ namespace InforumBackend.Models
 
         // Navigation Properties
 
-        // Declared virtual User Property for lazy loading Related Data
+        // Declared virtual Property for lazy loading Related Data
         public virtual ApplicationUser User { get; set; }
 
-        // Declared virtual Post Property for lazy loading Related Data
+        // Declared virtual Property for lazy loading Related Data
         public virtual BlogPost Post { get; set; }
 
         public Comment()
