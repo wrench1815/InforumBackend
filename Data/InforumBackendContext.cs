@@ -15,8 +15,6 @@ namespace InforumBackend.Data
         {
         }
 
-        public DbSet<Answer> Answer { get; set; }
-
         public DbSet<BlogPost> BlogPost { get; set; }
 
         public DbSet<Category> Category { get; set; }
@@ -27,6 +25,8 @@ namespace InforumBackend.Data
 
         public DbSet<Home> Home { get; set; }
 
+        public DbSet<ForumAnswer> ForumAnswer { get; set; }
+        
         public DbSet<ForumQuery> ForumQuery { get; set; }
 
         public DbSet<SubComment> SubComment { get; set; }
