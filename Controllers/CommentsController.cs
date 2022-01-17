@@ -33,7 +33,7 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    commets = comments,
+                    comments = comments,
                     pagination = paginationMetadata
                 });
             }
