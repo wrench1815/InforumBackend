@@ -29,11 +29,11 @@ namespace InforumBackend.Controllers
                 var paginationMetadata = new PaginationMetadata(subComments.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
 
-                var posts = await subComments.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
+                var paginatedSubComments = await subComments.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
 
                 return Ok(new
                 {
-                    Subcomments = subComments,
+                    Subcomments = paginatedSubComments,
                     Pagination = paginationMetadata
                 });
             }
@@ -71,7 +71,7 @@ namespace InforumBackend.Controllers
 
         // PUT: api/SubComments/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        // [Authorize]
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSubComment(long id, SubComment subComment)
         {
@@ -112,7 +112,7 @@ namespace InforumBackend.Controllers
 
         // POST: api/SubComments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        // [Authorize]
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<SubComment>> PostSubComment(SubComment subComment)
         {
@@ -132,7 +132,7 @@ namespace InforumBackend.Controllers
         }
 
         // DELETE: api/SubComments/5
-        // [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSubComment(long id)
         {
