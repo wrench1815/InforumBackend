@@ -24,7 +24,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var comments = _context.Comment.Include(co => co.User).OrderByDescending(bp => bp.DatePosted);
+                var comments = _context.Comment.Include(co => co.User).OrderByDescending(co => co.DatePosted);
 
                 var paginationMetadata = new PaginationMetadata(comments.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
@@ -121,11 +121,6 @@ namespace InforumBackend.Controllers
                 // add a new Comment object
                 _context.Comment.Add(comment);
                 await _context.SaveChangesAsync(); // save the object
-
-                // update and save the object
-                // _context.Update(comment);
-
-                // await _context.SaveChangesAsync();
 
                 return StatusCode(201);
             }
