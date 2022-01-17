@@ -33,8 +33,8 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    comments = comments,
-                    pagination = paginationMetadata
+                    Comments = comments,
+                    Pagination = paginationMetadata
                 });
             }
             catch (System.Exception)
