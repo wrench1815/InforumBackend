@@ -29,11 +29,11 @@ namespace InforumBackend.Controllers
                 var paginationMetadata = new PaginationMetadata(comments.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
 
-                var posts = await comments.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
+                var paginatedComments = await comments.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
 
                 return Ok(new
                 {
-                    Comments = comments,
+                    Comments = paginatedComments,
                     Pagination = paginationMetadata
                 });
             }
@@ -71,7 +71,7 @@ namespace InforumBackend.Controllers
 
         // PUT: api/Comments/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        // [Authorize]
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutComment(long id, Comment comment)
         {
@@ -112,7 +112,7 @@ namespace InforumBackend.Controllers
 
         // POST: api/Comments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        // [Authorize]
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Comment>> PostComment(Comment comment)
         {
@@ -132,7 +132,7 @@ namespace InforumBackend.Controllers
         }
 
         // DELETE: api/Comments/5
-        // [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComment(long id)
         {
