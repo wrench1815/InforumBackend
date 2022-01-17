@@ -9,31 +9,31 @@ namespace InforumBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CommentsController : ControllerBase
+    public class ForumAnswerController : ControllerBase
     {
         private readonly InforumBackendContext _context;
 
-        public CommentsController(InforumBackendContext context)
+        public ForumAnswerController(InforumBackendContext context)
         {
             _context = context;
         }
 
-        // GET: api/Comments
+        // GET: api/ForumAnswer
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery] PageParameter pageParameter)
+        public async Task<ActionResult<IEnumerable<ForumAnswer>>> GetForumAnswer([FromQuery] PageParameter pageParameter)
         {
             try
             {
-                var comments = _context.Comment.Include(co => co.User).OrderByDescending(co => co.DatePosted);
+                var forumAnswerList = _context.ForumAnswer.Include(fa => fa.User).OrderByDescending(fa => fa.DatePosted);
 
-                var paginationMetadata = new PaginationMetadata(comments.Count(), pageParameter.PageNumber, pageParameter.PageSize);
+                var paginationMetadata = new PaginationMetadata(forumAnswerList.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
 
-                var paginatedComments = await comments.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
+                var forumAnswerPaginated = await forumAnswerList.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
 
                 return Ok(new
                 {
-                    Comments = paginatedComments,
+                    Answers = forumAnswerPaginated,
                     Pagination = paginationMetadata
                 });
             }
@@ -44,24 +44,24 @@ namespace InforumBackend.Controllers
             }
         }
 
-        // GET: api/Comments/5
+        // GET: api/ForumAnswer/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Comment>> GetComment(long id)
+        public async Task<ActionResult<ForumAnswer>> GetForumAnswer(long id)
         {
             try
             {
-                var comment = await _context.Comment.Include(co => co.User).FirstOrDefaultAsync(i => i.Id == id);
+                var forumAnswer = await _context.ForumAnswer.Include(fa => fa.User).FirstOrDefaultAsync(i => i.Id == id);
 
-                if (comment == null)
+                if (forumAnswer == null)
                 {
                     return NotFound(new
                     {
                         Status = "Error",
-                        Message = "Comment not found"
+                        Message = "Answer not found"
                     });
                 }
 
-                return Ok(comment);
+                return Ok(forumAnswer);
             }
             catch (System.Exception)
             {
@@ -69,22 +69,22 @@ namespace InforumBackend.Controllers
             }
         }
 
-        // PUT: api/Comments/5
+        // PUT: api/ForumAnswer/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutComment(long id, Comment comment)
+        public async Task<IActionResult> PutForumAnswer(long id, ForumAnswer forumAnswer)
         {
-            if (id != comment.Id)
+            if (id != forumAnswer.Id)
             {
                 return BadRequest(new
                 {
                     Status = "Error",
-                    Message = "Failed to update comment. Check if the Data is Correct."
+                    Message = "Failed to update Answer. Check if the Data is Correct."
                 });
             }
 
-            _context.Entry(comment).State = EntityState.Modified;
+            _context.Entry(forumAnswer).State = EntityState.Modified;
 
             try
             {
@@ -92,12 +92,12 @@ namespace InforumBackend.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CommentExists(id))
+                if (!ForumAnswerExists(id))
                 {
                     return NotFound(new
                     {
                         Status = "Error",
-                        Message = "Comment not found"
+                        Message = "Answer not found"
 
                     });
                 }
@@ -110,16 +110,16 @@ namespace InforumBackend.Controllers
             return StatusCode(201);
         }
 
-        // POST: api/Comments
+        // POST: api/ForumAnswer
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Comment>> PostComment(Comment comment)
+        public async Task<ActionResult<ForumAnswer>> PostForumAnswer(ForumAnswer forumAnswer)
         {
             try
             {
-                // add a new Comment object
-                _context.Comment.Add(comment);
+                // add a new ForumAnswer object
+                _context.ForumAnswer.Add(forumAnswer);
                 await _context.SaveChangesAsync(); // save the object
 
                 return StatusCode(201);
@@ -131,31 +131,31 @@ namespace InforumBackend.Controllers
             }
         }
 
-        // DELETE: api/Comments/5
+        // DELETE: api/ForumAnswer/5
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteComment(long id)
+        public async Task<IActionResult> DeleteForumAnswer(long id)
         {
-            var comment = await _context.Comment.FindAsync(id);
-            if (comment == null)
+            var forumAnswer = await _context.ForumAnswer.FindAsync(id);
+            if (forumAnswer == null)
             {
                 return NotFound(new
                 {
                     Status = "Error",
-                    Message = "Comment not found"
+                    Message = "Answer not found"
 
                 });
             }
 
             try
             {
-                _context.Comment.Remove(comment);
+                _context.ForumAnswer.Remove(forumAnswer);
                 await _context.SaveChangesAsync();
 
                 return Ok(new
                 {
                     Status = "Success",
-                    Message = "Comment deleted successfully"
+                    Message = "Answer deleted successfully"
                 });
             }
             catch (System.Exception)
@@ -165,9 +165,9 @@ namespace InforumBackend.Controllers
             }
         }
 
-        private bool CommentExists(long id)
+        private bool ForumAnswerExists(long id)
         {
-            return _context.Comment.Any(c => c.Id == id);
+            return _context.ForumAnswer.Any(fa => fa.Id == id);
         }
     }
 }
