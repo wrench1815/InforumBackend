@@ -4,7 +4,7 @@ namespace InforumBackend.Models
 {
     public class SubComment
     {
-        public long id { get; set; }
+        public long Id { get; set; }
 
         public string Description { get; set; }
 
