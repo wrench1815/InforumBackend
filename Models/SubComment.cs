@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
 using InforumBackend.Authentication;
 
 namespace InforumBackend.Models
 {
-    public class Comment
+    public class SubComment
     {
         public long Id { get; set; }
 
@@ -11,25 +10,24 @@ namespace InforumBackend.Models
 
         public DateTime DatePosted { get; set; }
 
-        // UserId as a Relational Field
-        [ForeignKey("User")]
-        public string UserId { get; set; }
+        // CommentId as a Relational Field
+        public long CommentId { get; set; }
 
-        // PostId as a Relational Field
-        [ForeignKey("Post")]
-        public long PostId { get; set; }
+        // UserId as a Relational Field
+        public string UserId { get; set; }
 
         // Navigation Properties
 
         // Declared virtual Property for lazy loading Related Data
-        public virtual ApplicationUser User { get; set; }
+        public virtual Comment Comment { get; set; }
 
         // Declared virtual Property for lazy loading Related Data
-        public virtual BlogPost Post { get; set; }
+        public virtual ApplicationUser User { get; set; }
 
-        public Comment()
+        public SubComment()
         {
             DatePosted = DateTime.Now;
         }
+
     }
 }

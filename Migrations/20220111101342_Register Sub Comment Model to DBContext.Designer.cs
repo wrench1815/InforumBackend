@@ -4,6 +4,7 @@ using InforumBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InforumBackend.Migrations
 {
     [DbContext(typeof(InforumBackendContext))]
-    partial class InforumBackendContextModelSnapshot : ModelSnapshot
+    [Migration("20220111101342_Register Sub Comment Model to DBContext")]
+    partial class RegisterSubCommentModeltoDBContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -276,11 +278,11 @@ namespace InforumBackend.Migrations
 
             modelBuilder.Entity("InforumBackend.Models.SubComment", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("id"), 1L, 1);
 
                     b.Property<long>("CommentId")
                         .HasColumnType("bigint");
@@ -294,7 +296,7 @@ namespace InforumBackend.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
                     b.HasIndex("CommentId");
 
