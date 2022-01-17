@@ -27,7 +27,7 @@ namespace InforumBackend.Data
 
         public DbSet<Home> Home { get; set; }
 
-        public DbSet<Query> Query { get; set; }
+        public DbSet<ForumQuery> ForumQuery { get; set; }
 
         public DbSet<SubComment> SubComment { get; set; }
 
