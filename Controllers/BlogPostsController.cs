@@ -71,6 +71,31 @@ namespace InforumBackend.Controllers
             }
         }
 
+        // GET: api/BlogPosts/5
+        [HttpGet("slug/{slug}")]
+        public async Task<ActionResult<BlogPost>> GetBlogPostBySlug(string slug)
+        {
+            try
+            {
+                var blogPost = await _context.BlogPost.Include(bp => bp.Category).Include(bp => bp.Author).FirstOrDefaultAsync(i => i.Slug == slug);
+
+                if (blogPost == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = "Error",
+                        Message = "Post not found"
+                    });
+                }
+
+                return Ok(blogPost);
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
+
         // PUT: api/BlogPosts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Roles = "Editor, Admin")]
