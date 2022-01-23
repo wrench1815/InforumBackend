@@ -57,7 +57,7 @@ namespace InforumBackend.Controllers
                 {
                     return NotFound(new
                     {
-                        Status = "Error",
+                        Status = StatusCodes.Status404NotFound,
                         Message = "Post not found"
                     });
                 }
@@ -104,7 +104,11 @@ namespace InforumBackend.Controllers
         {
             if (id != blogPost.Id)
             {
-                return BadRequest();
+                return BadRequest(new
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Check if the Post data is Valid or not."
+                });
             }
 
             // generate slug based on the PUT data
@@ -115,20 +119,28 @@ namespace InforumBackend.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Post Updated Successfully."
+                });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (System.Exception)
             {
                 if (!BlogPostExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Post Does not Exist"
+                    });
                 }
                 else
                 {
                     return BadRequest();
                 }
             }
-
-            return StatusCode(201);
         }
 
         // POST: api/BlogPosts
