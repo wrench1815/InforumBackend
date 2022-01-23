@@ -21,7 +21,9 @@ namespace InforumBackend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategory()
         {
-            return await _context.Category.ToListAsync();
+            var categories = await _context.Category.ToListAsync();
+
+            return Ok(categories);
         }
 
         // GET: api/Categories/5
@@ -32,10 +34,15 @@ namespace InforumBackend.Controllers
 
             if (category == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Message = "Category not Found."
+                }
+                );
             }
 
-            return category;
+            return Ok(category);
         }
 
         // PUT: api/Categories/5
@@ -46,7 +53,11 @@ namespace InforumBackend.Controllers
         {
             if (id != category.Id)
             {
-                return BadRequest();
+                return BadRequest(new
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Check if request data is Correct."
+                });
             }
 
             _context.Entry(category).State = EntityState.Modified;
@@ -54,20 +65,27 @@ namespace InforumBackend.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Category Modified Successfully."
+                });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (System.Exception)
             {
                 if (!CategoryExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Category Does not Exist"
+                    });
                 }
                 else
                 {
-                    throw;
+                    return BadRequest();
                 }
             }
-
-            return NoContent();
         }
 
         // POST: api/Categories
@@ -76,10 +94,21 @@ namespace InforumBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
-            _context.Category.Add(category);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Category.Add(category);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCategory", new { id = category.Id }, category);
+                return StatusCode(StatusCodes.Status201Created, new
+                {
+                    Status = StatusCodes.Status201Created,
+                    Message = "Category created Successfully."
+                });
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
         }
 
         // DELETE: api/Categories/5
@@ -90,13 +119,28 @@ namespace InforumBackend.Controllers
             var category = await _context.Category.FindAsync(id);
             if (category == null)
             {
-                return NotFound();
+                return StatusCode(StatusCodes.Status404NotFound, new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Category does not exist."
+                });
             }
 
-            _context.Category.Remove(category);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Category.Remove(category);
+                await _context.SaveChangesAsync();
 
-            return NoContent();
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Category Deleted Successfully."
+                });
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
         }
 
         private bool CategoryExists(long id)
