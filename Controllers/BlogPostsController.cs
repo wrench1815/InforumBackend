@@ -166,11 +166,14 @@ namespace InforumBackend.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return StatusCode(201);
+                return StatusCode(StatusCodes.Status201Created, new
+                {
+                    Status = StatusCodes.Status201Created,
+                    Message = "Post created Sucessfully."
+                });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
@@ -185,7 +188,7 @@ namespace InforumBackend.Controllers
             {
                 return NotFound(new
                 {
-                    Status = "Error",
+                    Status = StatusCodes.Status404NotFound,
                     Message = "Post not found"
 
                 });
@@ -198,7 +201,7 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    Status = "Success",
+                    Status = StatusCodes.Status200OK,
                     Message = "Post deleted successfully"
                 });
             }
