@@ -51,10 +51,14 @@ namespace InforumBackend.Controllers
 
             if (contactForm == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Message = "Contact Form not Fount."
+                });
             }
 
-            return contactForm;
+            return Ok(contactForm);
         }
 
         // PUT: api/ContactForms/5
@@ -65,7 +69,11 @@ namespace InforumBackend.Controllers
         {
             if (id != contactForm.Id)
             {
-                return BadRequest();
+                return BadRequest(new
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Check if Form Data is Valid or not."
+                });
             }
 
             _context.Entry(contactForm).State = EntityState.Modified;
@@ -73,20 +81,28 @@ namespace InforumBackend.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Contact Form Updated Successfully."
+                });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (System.Exception)
             {
                 if (!ContactFormExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Contact Form not Found."
+                    });
                 }
                 else
                 {
-                    throw;
+                    return BadRequest();
                 }
             }
-
-            return NoContent();
         }
 
         // POST: api/ContactForms
@@ -94,10 +110,21 @@ namespace InforumBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<ContactForm>> PostContactForm(ContactForm contactForm)
         {
-            _context.ContactForm.Add(contactForm);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.ContactForm.Add(contactForm);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetContactForm", new { id = contactForm.Id }, contactForm);
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Contact Form added Successfully."
+                });
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
         }
 
         // DELETE: api/ContactForms/5
@@ -108,13 +135,27 @@ namespace InforumBackend.Controllers
             var contactForm = await _context.ContactForm.FindAsync(id);
             if (contactForm == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Message = "Contact Form not Found."
+                });
             }
+            try
+            {
+                _context.ContactForm.Remove(contactForm);
+                await _context.SaveChangesAsync();
 
-            _context.ContactForm.Remove(contactForm);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Contact Form deleted Successfully."
+                });
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
         }
 
         private bool ContactFormExists(long id)
