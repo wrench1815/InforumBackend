@@ -71,7 +71,7 @@ namespace InforumBackend.Controllers
             }
         }
 
-        // GET: api/BlogPosts/5
+        // GET: api/BlogPosts/slug/5
         [HttpGet("slug/{slug}")]
         public async Task<ActionResult<BlogPost>> GetBlogPostBySlug(string slug)
         {
