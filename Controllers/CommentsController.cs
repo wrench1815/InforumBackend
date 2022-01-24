@@ -56,7 +56,7 @@ namespace InforumBackend.Controllers
                 {
                     return NotFound(new
                     {
-                        Status = "Error",
+                        Status = StatusCodes.Status404NotFound,
                         Message = "Comment not found"
                     });
                 }
@@ -79,7 +79,7 @@ namespace InforumBackend.Controllers
             {
                 return BadRequest(new
                 {
-                    Status = "Error",
+                    Status = StatusCodes.Status400BadRequest,
                     Message = "Failed to update comment. Check if the Data is Correct."
                 });
             }
@@ -89,14 +89,20 @@ namespace InforumBackend.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Comment Updated Successfully."
+                });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (System.Exception)
             {
                 if (!CommentExists(id))
                 {
                     return NotFound(new
                     {
-                        Status = "Error",
+                        Status = StatusCodes.Status404NotFound,
                         Message = "Comment not found"
 
                     });
@@ -106,8 +112,6 @@ namespace InforumBackend.Controllers
                     return BadRequest();
                 }
             }
-
-            return StatusCode(201);
         }
 
         // POST: api/Comments
@@ -122,11 +126,14 @@ namespace InforumBackend.Controllers
                 _context.Comment.Add(comment);
                 await _context.SaveChangesAsync(); // save the object
 
-                return StatusCode(201);
+                return StatusCode(StatusCodes.Status201Created, new
+                {
+                    Status = StatusCodes.Status201Created,
+                    Message = "Comment Added Succesfully."
+                });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
@@ -141,8 +148,8 @@ namespace InforumBackend.Controllers
             {
                 return NotFound(new
                 {
-                    Status = "Error",
-                    Message = "Comment not found"
+                    Status = StatusCodes.Status404NotFound,
+                    Message = "Comment not found."
 
                 });
             }
@@ -154,13 +161,12 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    Status = "Success",
-                    Message = "Comment deleted successfully"
+                    Status = StatusCodes.Status200OK,
+                    Message = "Comment deleted successfully."
                 });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
