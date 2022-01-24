@@ -115,9 +115,9 @@ namespace InforumBackend.Controllers
                 _context.ContactForm.Add(contactForm);
                 await _context.SaveChangesAsync();
 
-                return Ok(new
+                return StatusCode(StatusCodes.Status201Created, new
                 {
-                    Status = StatusCodes.Status200OK,
+                    Status = StatusCodes.Status201Created,
                     Message = "Contact Form added Successfully."
                 });
             }
