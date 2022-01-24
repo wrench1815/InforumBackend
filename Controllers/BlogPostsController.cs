@@ -83,7 +83,7 @@ namespace InforumBackend.Controllers
                 {
                     return NotFound(new
                     {
-                        Status = "Error",
+                        Status = StatusCodes.Status404NotFound,
                         Message = "Post not found"
                     });
                 }
