@@ -56,8 +56,8 @@ namespace InforumBackend.Controllers
                 {
                     return NotFound(new
                     {
-                        Status = "Error",
-                        Message = "Sub Comment not found"
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Sub Comment not found."
                     });
                 }
 
@@ -84,20 +84,26 @@ namespace InforumBackend.Controllers
                 });
             }
 
-            _context.Entry(subComment).State = EntityState.Modified;
-
             try
             {
+                _context.Entry(subComment).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Sub Comment updated Successfully."
+                });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (System.Exception)
             {
                 if (!SubCommentExists(id))
                 {
                     return NotFound(new
                     {
-                        Status = "Error",
-                        Message = "Sub Comment not found"
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Sub Comment not found."
 
                     });
                 }
@@ -106,8 +112,6 @@ namespace InforumBackend.Controllers
                     return BadRequest();
                 }
             }
-
-            return StatusCode(201);
         }
 
         // POST: api/SubComments
@@ -122,11 +126,14 @@ namespace InforumBackend.Controllers
                 _context.SubComment.Add(subComment);
                 await _context.SaveChangesAsync(); // save the object
 
-                return StatusCode(201);
+                return StatusCode(StatusCodes.Status201Created, new
+                {
+                    Status = StatusCodes.Status201Created,
+                    Message = "Sub Comment updated Succesfully."
+                });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
@@ -141,8 +148,8 @@ namespace InforumBackend.Controllers
             {
                 return NotFound(new
                 {
-                    Status = "Error",
-                    Message = "Sub Comment not found"
+                    Status = StatusCodes.Status404NotFound,
+                    Message = "Sub Comment not found."
 
                 });
             }
@@ -154,13 +161,12 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    Status = "Success",
-                    Message = "Sub Comment deleted successfully"
+                    Status = StatusCodes.Status200OK,
+                    Message = "Sub Comment deleted Successfully."
                 });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
