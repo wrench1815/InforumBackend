@@ -134,9 +134,9 @@ namespace InforumBackend.Controllers
                     await userManager.AddToRoleAsync(user, UserRoles.User);
                 }
 
-                return Ok(new
+                return StatusCode(StatusCodes.Status201Created, new
                 {
-                    Status = StatusCodes.Status200OK,
+                    Status = StatusCodes.Status201Created,
                     Message = "User created successfully!"
                 });
             }
@@ -202,9 +202,9 @@ namespace InforumBackend.Controllers
                     await userManager.AddToRoleAsync(user, UserRoles.Admin);
                 }
 
-                return Ok(new
+                return StatusCode(StatusCodes.Status201Created, new
                 {
-                    Status = StatusCodes.Status200OK,
+                    Status = StatusCodes.Status201Created,
                     Message = "Admin created successfully!"
                 });
             }
@@ -272,9 +272,9 @@ namespace InforumBackend.Controllers
                     await userManager.AddToRoleAsync(user, UserRoles.Editor);
                 }
 
-                return Ok(new
+                return StatusCode(StatusCodes.Status201Created, new
                 {
-                    Status = StatusCodes.Status400BadRequest,
+                    Status = StatusCodes.Status201Created,
                     Message = "Editor created successfully!"
                 });
             }
