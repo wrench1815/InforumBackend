@@ -79,7 +79,7 @@ namespace InforumBackend.Controllers
             {
                 return BadRequest(new
                 {
-                    Status = "Error",
+                    Status = StatusCodes.Status400BadRequest,
                     Message = "Failed to update Answer. Check if the Data is Correct."
                 });
             }
@@ -89,16 +89,21 @@ namespace InforumBackend.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Answer Updates Successfully."
+                });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (System.Exception)
             {
                 if (!ForumAnswerExists(id))
                 {
                     return NotFound(new
                     {
-                        Status = "Error",
-                        Message = "Answer not found"
-
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Answer not found."
                     });
                 }
                 else
@@ -106,8 +111,6 @@ namespace InforumBackend.Controllers
                     return BadRequest();
                 }
             }
-
-            return StatusCode(201);
         }
 
         // POST: api/ForumAnswer
@@ -122,11 +125,14 @@ namespace InforumBackend.Controllers
                 _context.ForumAnswer.Add(forumAnswer);
                 await _context.SaveChangesAsync(); // save the object
 
-                return StatusCode(201);
+                return StatusCode(StatusCodes.Status201Created, new
+                {
+                    Status = StatusCodes.Status201Created,
+                    Message = "Answer added Successfully."
+                });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
@@ -141,8 +147,8 @@ namespace InforumBackend.Controllers
             {
                 return NotFound(new
                 {
-                    Status = "Error",
-                    Message = "Answer not found"
+                    Status = StatusCodes.Status404NotFound,
+                    Message = "Answer not found."
 
                 });
             }
@@ -154,13 +160,12 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    Status = "Success",
-                    Message = "Answer deleted successfully"
+                    Status = StatusCodes.Status200OK,
+                    Message = "Answer deleted successfully."
                 });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }

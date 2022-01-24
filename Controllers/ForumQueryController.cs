@@ -40,7 +40,6 @@ namespace InforumBackend.Controllers
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
@@ -57,7 +56,32 @@ namespace InforumBackend.Controllers
                 {
                     return NotFound(new
                     {
-                        Status = "Error",
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Query not found."
+                    });
+                }
+
+                return Ok(forumQuery);
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        // GET: api/ForumQuery/slug/5
+        [HttpGet("slug/{slug}")]
+        public async Task<ActionResult<ForumQuery>> GetForumQueryBySlug(string slug)
+        {
+            try
+            {
+                var forumQuery = await _context.ForumQuery.Include(fq => fq.Category).Include(fq => fq.Author).FirstOrDefaultAsync(i => i.Slug == slug);
+
+                if (forumQuery == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
                         Message = "Query not found"
                     });
                 }
@@ -66,7 +90,6 @@ namespace InforumBackend.Controllers
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
@@ -79,7 +102,11 @@ namespace InforumBackend.Controllers
         {
             if (id != forumQuery.Id)
             {
-                return BadRequest();
+                return BadRequest(new
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Check if the Query Data is valid or not."
+                });
             }
 
             // generate slug based on the PUT data
@@ -90,20 +117,28 @@ namespace InforumBackend.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Query updated Successfully."
+                });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (System.Exception)
             {
                 if (!ForumQueryExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Query not found."
+                    });
                 }
                 else
                 {
                     return BadRequest();
                 }
             }
-
-            return StatusCode(201);
         }
 
         // POST: api/ForumQuery
@@ -129,11 +164,14 @@ namespace InforumBackend.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return StatusCode(201);
+                return StatusCode(StatusCodes.Status201Created, new
+                {
+                    Status = StatusCodes.Status201Created,
+                    Message = "Query Aded Successfully."
+                });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
@@ -148,9 +186,8 @@ namespace InforumBackend.Controllers
             {
                 return NotFound(new
                 {
-                    Status = "Error",
-                    Message = "Query not found"
-
+                    Status = StatusCodes.Status404NotFound,
+                    Message = "Query not found."
                 });
             }
 
@@ -161,13 +198,12 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    Status = "Success",
-                    Message = "Query deleted successfully"
+                    Status = StatusCodes.Status200OK,
+                    Message = "Query deleted Successfully."
                 });
             }
             catch (System.Exception)
             {
-
                 return BadRequest();
             }
         }
