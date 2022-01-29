@@ -299,11 +299,90 @@ namespace InforumBackend.Controllers
 
                 var users = await usersList.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
 
+                // return only needed user data
+                var partialUser = users.Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.FirstName,
+                    u.LastName,
+                    u.Gender,
+                    u.DateJoined,
+                });
 
                 return Ok(new
                 {
-                    users = users,
+                    users = partialUser,
                     pagination = paginationMetadata
+                });
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
+        }
+
+        // List all Registered Editors
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        [Route("list/editor")]
+        public async Task<IActionResult> GetEditorsList()
+        {
+            try
+            {
+                var editorsList = await userManager.GetUsersInRoleAsync(UserRoles.Editor);
+
+                // return only needed user data
+                var partialUser = editorsList.Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.FirstName,
+                    u.LastName,
+                    u.Gender,
+                    u.DateJoined,
+                });
+
+                return Ok(new
+                {
+                    users = partialUser,
+                });
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
+        }
+
+        // List all Registered Admins
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        [Route("list/admin")]
+        public async Task<IActionResult> GetAdminsList()
+        {
+            try
+            {
+                var adminsList = await userManager.GetUsersInRoleAsync(UserRoles.Admin);
+
+                // return only needed user data
+                var partialUser = adminsList.Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.FirstName,
+                    u.LastName,
+                    u.Gender,
+                    u.DateJoined,
+                });
+
+                return Ok(new
+                {
+                    users = partialUser,
                 });
             }
             catch (System.Exception)
@@ -333,9 +412,21 @@ namespace InforumBackend.Controllers
                     });
                 }
 
+                // return only needed user data
+                var partialUser = new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email,
+                    user.FirstName,
+                    user.LastName,
+                    user.Gender,
+                    user.DateJoined,
+                };
+
                 return Ok(new
                 {
-                    user = user,
+                    user = partialUser,
                     userRole = userRole
                 });
             }
@@ -461,9 +552,21 @@ namespace InforumBackend.Controllers
                     });
                 }
 
+                // return only needed user data
+                var partialUser = new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email,
+                    user.FirstName,
+                    user.LastName,
+                    user.Gender,
+                    user.DateJoined,
+                };
+
                 return Ok(new
                 {
-                    user = user,
+                    user = partialUser,
                     userRole = userRole
                 });
             }
