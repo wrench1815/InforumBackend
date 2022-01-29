@@ -299,10 +299,21 @@ namespace InforumBackend.Controllers
 
                 var users = await usersList.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
 
+                // return only needed user data
+                var partialUser = users.Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.FirstName,
+                    u.LastName,
+                    u.Gender,
+                    u.DateJoined,
+                });
 
                 return Ok(new
                 {
-                    users = users,
+                    users = partialUser,
                     pagination = paginationMetadata
                 });
             }
@@ -313,8 +324,75 @@ namespace InforumBackend.Controllers
             }
         }
 
+        // List all Registered Editors
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        [Route("list/editor")]
+        public async Task<IActionResult> GetEditorsList()
+        {
+            try
+            {
+                var editorsList = await userManager.GetUsersInRoleAsync(UserRoles.Editor);
+
+                // return only needed user data
+                var partialUser = editorsList.Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.FirstName,
+                    u.LastName,
+                    u.Gender,
+                    u.DateJoined,
+                });
+
+                return Ok(new
+                {
+                    users = partialUser,
+                });
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
+        }
+
+        // List all Registered Admins
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        [Route("list/admin")]
+        public async Task<IActionResult> GetAdminsList()
+        {
+            try
+            {
+                var adminsList = await userManager.GetUsersInRoleAsync(UserRoles.Admin);
+
+                // return only needed user data
+                var partialUser = adminsList.Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.FirstName,
+                    u.LastName,
+                    u.Gender,
+                    u.DateJoined,
+                });
+
+                return Ok(new
+                {
+                    users = partialUser,
+                });
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
+        }
+
         // List Single User as per the id
-        [Authorize]
         [HttpGet]
         [Route("single/{id}")]
         public async Task<IActionResult> GetSingleUser(string id)
@@ -333,9 +411,21 @@ namespace InforumBackend.Controllers
                     });
                 }
 
+                // return only needed user data
+                var partialUser = new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email,
+                    user.FirstName,
+                    user.LastName,
+                    user.Gender,
+                    user.DateJoined,
+                };
+
                 return Ok(new
                 {
-                    user = user,
+                    user = partialUser,
                     userRole = userRole
                 });
             }
@@ -461,15 +551,97 @@ namespace InforumBackend.Controllers
                     });
                 }
 
+                // return only needed user data
+                var partialUser = new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email,
+                    user.FirstName,
+                    user.LastName,
+                    user.Gender,
+                    user.DateJoined,
+                };
+
                 return Ok(new
                 {
-                    user = user,
+                    user = partialUser,
                     userRole = userRole
                 });
             }
             catch (System.Exception)
             {
 
+                return BadRequest();
+            }
+        }
+
+        // List all Roles
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        [Route("roles/list")]
+        public async Task<IActionResult> GetRolesList()
+        {
+            try
+            {
+                var rolesList = await roleManager.Roles.ToListAsync();
+
+                return Ok(new
+                {
+                    roles = rolesList
+                });
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
+        }
+
+        // update user role
+        [Authorize(Roles = "Admin")]
+        [HttpPatch]
+        [Route("role/update")]
+        public async Task<IActionResult> UpdateUserRole(RoleUpdate roleUpdate)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(roleUpdate.UserId);
+                var newRole = await roleManager.FindByIdAsync(roleUpdate.RoleId);
+                var oldRole = await userManager.GetRolesAsync(user);
+
+                if (user == null || newRole == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "User or Role not found"
+                    });
+                }
+
+                var roleRemoval = await userManager.RemoveFromRoleAsync(user, oldRole.FirstOrDefault());
+                if (roleRemoval.Succeeded)
+                {
+                    var roleAddition = await userManager.AddToRoleAsync(user, newRole.Name);
+                    if (roleAddition.Succeeded)
+                    {
+                        return Ok(new
+                        {
+                            Status = StatusCodes.Status200OK,
+                            Message = "User Role Updated Successfully!"
+                        });
+                    }
+                }
+
+                return BadRequest(new
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Failed to Update User Role! Please try again."
+                });
+
+            }
+            catch (System.Exception)
+            {
                 return BadRequest();
             }
         }

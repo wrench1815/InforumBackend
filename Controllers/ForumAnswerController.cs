@@ -24,7 +24,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var forumAnswerList = _context.ForumAnswer.Include(fa => fa.User).OrderByDescending(fa => fa.DatePosted);
+                var forumAnswerList = _context.ForumAnswer.OrderByDescending(fa => fa.DatePosted);
 
                 var paginationMetadata = new PaginationMetadata(forumAnswerList.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
@@ -50,7 +50,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var forumAnswer = await _context.ForumAnswer.Include(fa => fa.User).FirstOrDefaultAsync(i => i.Id == id);
+                var forumAnswer = await _context.ForumAnswer.FirstOrDefaultAsync(i => i.Id == id);
 
                 if (forumAnswer == null)
                 {

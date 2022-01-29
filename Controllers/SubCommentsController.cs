@@ -24,7 +24,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var subComments = _context.SubComment.Include(sc => sc.User).OrderByDescending(sc => sc.DatePosted);
+                var subComments = _context.SubComment.OrderByDescending(sc => sc.DatePosted);
 
                 var paginationMetadata = new PaginationMetadata(subComments.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
@@ -50,7 +50,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var subComment = await _context.SubComment.Include(sc => sc.User).FirstOrDefaultAsync(i => i.Id == id);
+                var subComment = await _context.SubComment.FirstOrDefaultAsync(i => i.Id == id);
 
                 if (subComment == null)
                 {
