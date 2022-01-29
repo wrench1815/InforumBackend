@@ -39,7 +39,7 @@ namespace InforumBackend.Controllers
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
-                        Message = "Home Data not found."
+                        Message = "Home data not found."
                     });
                 }
 
@@ -75,7 +75,7 @@ namespace InforumBackend.Controllers
                 return Ok(new
                 {
                     Status = StatusCodes.Status200OK,
-                    Message = "Home Data updated Successfully."
+                    Message = "Home data updated Successfully."
                 });
             }
             catch (System.Exception)
@@ -85,7 +85,7 @@ namespace InforumBackend.Controllers
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
-                        Message = "Home Does not Exist."
+                        Message = "Home does not Exist."
                     });
                 }
                 else
@@ -109,7 +109,7 @@ namespace InforumBackend.Controllers
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
-                    Message = "Home Data added Successfully."
+                    Message = "Home data added Successfully."
                 });
             }
             catch (System.Exception)
@@ -137,7 +137,7 @@ namespace InforumBackend.Controllers
                 return Ok(new
                 {
                     Status = StatusCodes.Status200OK,
-                    Message = "Home Dleted Successfully."
+                    Message = "Home deleted Successfully."
                 });
             }
             catch (System.Exception)
