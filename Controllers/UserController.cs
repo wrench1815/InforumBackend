@@ -602,7 +602,7 @@ namespace InforumBackend.Controllers
         // update user role
         [Authorize(Roles = "Admin")]
         [HttpPatch]
-        [Route("roles/update")]
+        [Route("role/update")]
         public async Task<IActionResult> UpdateUserRole(RoleUpdate roleUpdate)
         {
             try
