@@ -576,6 +576,76 @@ namespace InforumBackend.Controllers
                 return BadRequest();
             }
         }
+
+        // List all Roles
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        [Route("roles/list")]
+        public async Task<IActionResult> GetRolesList()
+        {
+            try
+            {
+                var rolesList = await roleManager.Roles.ToListAsync();
+
+                return Ok(new
+                {
+                    roles = rolesList
+                });
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
+        }
+
+        // update user role
+        [Authorize(Roles = "Admin")]
+        [HttpPatch]
+        [Route("roles/update")]
+        public async Task<IActionResult> UpdateUserRole(RoleUpdate roleUpdate)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(roleUpdate.UserId);
+                var newRole = await roleManager.FindByIdAsync(roleUpdate.RoleId);
+                var oldRole = await userManager.GetRolesAsync(user);
+
+                if (user == null || newRole == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "User or Role not found"
+                    });
+                }
+
+                var roleRemoval = await userManager.RemoveFromRoleAsync(user, oldRole.FirstOrDefault());
+                if (roleRemoval.Succeeded)
+                {
+                    var roleAddition = await userManager.AddToRoleAsync(user, newRole.Name);
+                    if (roleAddition.Succeeded)
+                    {
+                        return Ok(new
+                        {
+                            Status = StatusCodes.Status200OK,
+                            Message = "User Role Updated Successfully!"
+                        });
+                    }
+                }
+
+                return BadRequest(new
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Failed to Update User Role! Please try again."
+                });
+
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
     }
 
 }
