@@ -393,7 +393,6 @@ namespace InforumBackend.Controllers
         }
 
         // List Single User as per the id
-        [Authorize]
         [HttpGet]
         [Route("single/{id}")]
         public async Task<IActionResult> GetSingleUser(string id)
