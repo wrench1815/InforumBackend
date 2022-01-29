@@ -25,7 +25,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var blogPosts = _context.BlogPost.Include(bp => bp.Category).Include(bp => bp.Author).OrderByDescending(bp => bp.DatePosted);
+                var blogPosts = _context.BlogPost.Include(bp => bp.Category).OrderByDescending(bp => bp.DatePosted);
 
                 var paginationMetadata = new PaginationMetadata(blogPosts.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
@@ -51,7 +51,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var blogPost = await _context.BlogPost.Include(bp => bp.Category).Include(bp => bp.Author).FirstOrDefaultAsync(i => i.Id == id);
+                var blogPost = await _context.BlogPost.Include(bp => bp.Category).FirstOrDefaultAsync(i => i.Id == id);
 
                 if (blogPost == null)
                 {
@@ -77,7 +77,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var blogPost = await _context.BlogPost.Include(bp => bp.Category).Include(bp => bp.Author).FirstOrDefaultAsync(i => i.Slug == slug);
+                var blogPost = await _context.BlogPost.Include(bp => bp.Category).FirstOrDefaultAsync(i => i.Slug == slug);
 
                 if (blogPost == null)
                 {

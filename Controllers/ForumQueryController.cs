@@ -25,7 +25,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var forumQuery = _context.ForumQuery.Include(fq => fq.Category).Include(fq => fq.Author).OrderByDescending(fq => fq.DatePosted);
+                var forumQuery = _context.ForumQuery.Include(fq => fq.Category).OrderByDescending(fq => fq.DatePosted);
 
                 var paginationMetadata = new PaginationMetadata(forumQuery.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
@@ -50,7 +50,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var forumQuery = await _context.ForumQuery.Include(fq => fq.Category).Include(fq => fq.Author).FirstOrDefaultAsync(i => i.Id == id);
+                var forumQuery = await _context.ForumQuery.Include(fq => fq.Category).FirstOrDefaultAsync(i => i.Id == id);
 
                 if (forumQuery == null)
                 {
@@ -75,7 +75,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var forumQuery = await _context.ForumQuery.Include(fq => fq.Category).Include(fq => fq.Author).FirstOrDefaultAsync(i => i.Slug == slug);
+                var forumQuery = await _context.ForumQuery.Include(fq => fq.Category).FirstOrDefaultAsync(i => i.Slug == slug);
 
                 if (forumQuery == null)
                 {
