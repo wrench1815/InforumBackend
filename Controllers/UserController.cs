@@ -104,7 +104,9 @@ namespace InforumBackend.Controllers
                     SecurityStamp = Guid.NewGuid().ToString(),
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    Gender = model.Gender
+                    Gender = model.Gender,
+                    ProfileImage = model.ProfileImage,
+                    IsRestricted = false,
                 };
 
                 var result = await userManager.CreateAsync(user, model.Password);
@@ -171,7 +173,9 @@ namespace InforumBackend.Controllers
                     SecurityStamp = Guid.NewGuid().ToString(),
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    Gender = model.Gender
+                    Gender = model.Gender,
+                    ProfileImage = model.ProfileImage,
+                    IsRestricted = false,
                 };
 
                 var result = await userManager.CreateAsync(user, model.Password);
@@ -241,7 +245,9 @@ namespace InforumBackend.Controllers
                     SecurityStamp = Guid.NewGuid().ToString(),
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    Gender = model.Gender
+                    Gender = model.Gender,
+                    ProfileImage = model.ProfileImage,
+                    IsRestricted = false,
                 };
 
                 var result = await userManager.CreateAsync(user, model.Password);
@@ -308,6 +314,8 @@ namespace InforumBackend.Controllers
                     u.FirstName,
                     u.LastName,
                     u.Gender,
+                    u.ProfileImage,
+                    u.IsRestricted,
                     u.DateJoined,
                 });
 
@@ -343,6 +351,8 @@ namespace InforumBackend.Controllers
                     u.FirstName,
                     u.LastName,
                     u.Gender,
+                    u.ProfileImage,
+                    u.IsRestricted,
                     u.DateJoined,
                 });
 
@@ -377,6 +387,8 @@ namespace InforumBackend.Controllers
                     u.FirstName,
                     u.LastName,
                     u.Gender,
+                    u.ProfileImage,
+                    u.IsRestricted,
                     u.DateJoined,
                 });
 
@@ -420,6 +432,8 @@ namespace InforumBackend.Controllers
                     user.FirstName,
                     user.LastName,
                     user.Gender,
+                    user.ProfileImage,
+                    user.IsRestricted,
                     user.DateJoined,
                 };
 
@@ -454,6 +468,7 @@ namespace InforumBackend.Controllers
                     user.LastName = model.LastName;
                     user.Gender = model.Gender;
                     user.Email = model.Email;
+                    user.ProfileImage = model.ProfileImage;
                     user.UserName = model.Email;
 
                     var result = await userManager.UpdateAsync(user);
@@ -560,12 +575,14 @@ namespace InforumBackend.Controllers
                     user.FirstName,
                     user.LastName,
                     user.Gender,
+                    user.ProfileImage,
+                    user.IsRestricted,
                     user.DateJoined,
                 };
 
                 return Ok(new
                 {
-                    user = partialUser,
+                    user = user,
                     userRole = userRole
                 });
             }
@@ -639,6 +656,121 @@ namespace InforumBackend.Controllers
                     Message = "Failed to Update User Role! Please try again."
                 });
 
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        // Restrict user
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [Route("restrict/{id}")]
+        public async Task<IActionResult> RestrictUser(string id)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "User not found"
+                    });
+                }
+
+                // If user is Restricted, Un-restrict them
+                if (user.IsRestricted)
+                {
+                    user.IsRestricted = false;
+
+                    var result = await userManager.UpdateAsync(user);
+                    if (result.Succeeded)
+                    {
+                        return Ok(new
+                        {
+                            Status = StatusCodes.Status200OK,
+                            Message = "User Un-Restricted Successfully!"
+                        });
+                    }
+                    else
+                    {
+                        return BadRequest(new
+                        {
+                            Status = StatusCodes.Status400BadRequest,
+                            Message = "Failed to Un-Restrict User."
+                        });
+                    }
+                }
+                else
+                {
+                    user.IsRestricted = true;
+
+                    var result = await userManager.UpdateAsync(user);
+                    if (result.Succeeded)
+                    {
+                        return Ok(new
+                        {
+                            Status = StatusCodes.Status200OK,
+                            Message = "User Restricted Successfully!"
+                        });
+                    }
+                    else
+                    {
+                        return StatusCode(StatusCodes.Status400BadRequest, new
+                        {
+                            Status = StatusCodes.Status400BadRequest,
+                            Message = "Failed to Restrict User."
+                        });
+                    }
+                }
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        // Permanently Delete user
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [Route("delete/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "User not found"
+                    });
+                }
+
+                var result = await userManager.DeleteAsync(user);
+
+                if (result.Succeeded)
+                {
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "User Deleted Successfully!"
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "Failed to Delete User."
+                    });
+                }
             }
             catch (System.Exception)
             {
