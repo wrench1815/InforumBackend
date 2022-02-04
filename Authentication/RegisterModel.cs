@@ -14,6 +14,9 @@ namespace InforumBackend.Authentication
         [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; }
 
+        [Required(ErrorMessage = "Profile Image is required")]
+        public string ProfileImage { get; set; }
+
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
 
