@@ -20,11 +20,20 @@ namespace InforumBackend.Controllers
 
         // GET: api/SubComments
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SubComment>>> GetSubComments([FromQuery] PageParameter pageParameter)
+        public async Task<ActionResult<IEnumerable<SubComment>>> GetSubComments([FromQuery] PageParameter pageParameter, long commentId)
         {
             try
             {
-                var subComments = _context.SubComment.OrderByDescending(sc => sc.DatePosted);
+                IOrderedQueryable<SubComment> subComments;
+
+                if (commentId != 0)
+                {
+                    subComments = _context.SubComment.Where(sc => sc.CommentId == commentId).OrderByDescending(sc => sc.DatePosted);
+                }
+                else
+                {
+                    subComments = _context.SubComment.OrderByDescending(sc => sc.DatePosted);
+                }
 
                 var paginationMetadata = new PaginationMetadata(subComments.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));

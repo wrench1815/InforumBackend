@@ -20,11 +20,20 @@ namespace InforumBackend.Controllers
 
         // GET: api/Comments
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery] PageParameter pageParameter)
+        public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery] PageParameter pageParameter, long postId)
         {
             try
             {
-                var comments = _context.Comment.OrderByDescending(co => co.DatePosted);
+                IOrderedQueryable<Comment> comments;
+
+                if (postId != 0)
+                {
+                    comments = _context.Comment.Where(co => co.PostId == postId).OrderByDescending(co => co.DatePosted);
+                }
+                else
+                {
+                    comments = _context.Comment.OrderByDescending(co => co.DatePosted);
+                }
 
                 var paginationMetadata = new PaginationMetadata(comments.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
