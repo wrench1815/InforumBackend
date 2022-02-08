@@ -14,6 +14,12 @@ namespace InforumBackend.Models
         // Content of the Blog Post
         public string Description { get; set; }
 
+        // Short Intro for the Blog Post
+        public string ShortDescription { get; set; }
+
+        // Feature Image for the Blog Post
+        public string FeatureImage { get; set; }
+
         // Excerpt of the Blog Post
         // TODO: set text limit
         public string Excerpt { get; set; }
