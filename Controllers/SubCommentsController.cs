@@ -42,7 +42,7 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    Subcomments = paginatedSubComments,
+                    SubComments = paginatedSubComments,
                     Pagination = paginationMetadata
                 });
             }
@@ -138,7 +138,7 @@ namespace InforumBackend.Controllers
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
-                    Message = "Sub Comment updated Succesfully."
+                    Message = "Sub Comment added Succesfully."
                 });
             }
             catch (System.Exception)
