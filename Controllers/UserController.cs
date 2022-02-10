@@ -298,7 +298,6 @@ namespace InforumBackend.Controllers
         }
 
         // List all Registered Users
-        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("list")]
         public async Task<IActionResult> GetUsers([FromQuery] PageParameter pageParameter)
@@ -341,8 +340,45 @@ namespace InforumBackend.Controllers
             }
         }
 
+
+        // List all Users with role User
+        [HttpGet]
+        [Route("list/user")]
+        public async Task<IActionResult> GetUsersList()
+        {
+            try
+            {
+                var editorsList = await userManager.GetUsersInRoleAsync(UserRoles.User);
+
+                // return only needed user data
+                var partialUser = editorsList.Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.FirstName,
+                    u.LastName,
+                    u.Gender,
+                    u.ProfileImage,
+                    u.IsRestricted,
+                    u.DateJoined,
+                    u.Address,
+                    u.DOB,
+                });
+
+                return Ok(new
+                {
+                    users = partialUser,
+                });
+            }
+            catch (System.Exception)
+            {
+
+                return BadRequest();
+            }
+        }
+
         // List all Registered Editors
-        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("list/editor")]
         public async Task<IActionResult> GetEditorsList()
