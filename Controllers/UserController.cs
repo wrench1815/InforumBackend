@@ -107,6 +107,9 @@ namespace InforumBackend.Controllers
                     Gender = model.Gender,
                     ProfileImage = model.ProfileImage,
                     IsRestricted = false,
+                    Address = "",
+                    DOB = ""
+
                 };
 
                 var result = await userManager.CreateAsync(user, model.Password);
@@ -176,6 +179,8 @@ namespace InforumBackend.Controllers
                     Gender = model.Gender,
                     ProfileImage = model.ProfileImage,
                     IsRestricted = false,
+                    Address = "",
+                    DOB = ""
                 };
 
                 var result = await userManager.CreateAsync(user, model.Password);
@@ -248,6 +253,8 @@ namespace InforumBackend.Controllers
                     Gender = model.Gender,
                     ProfileImage = model.ProfileImage,
                     IsRestricted = false,
+                    Address = "",
+                    DOB = ""
                 };
 
                 var result = await userManager.CreateAsync(user, model.Password);
@@ -317,6 +324,8 @@ namespace InforumBackend.Controllers
                     u.ProfileImage,
                     u.IsRestricted,
                     u.DateJoined,
+                    u.Address,
+                    u.DOB,
                 });
 
                 return Ok(new
@@ -354,6 +363,8 @@ namespace InforumBackend.Controllers
                     u.ProfileImage,
                     u.IsRestricted,
                     u.DateJoined,
+                    u.Address,
+                    u.DOB,
                 });
 
                 return Ok(new
@@ -390,6 +401,8 @@ namespace InforumBackend.Controllers
                     u.ProfileImage,
                     u.IsRestricted,
                     u.DateJoined,
+                    u.Address,
+                    u.DOB,
                 });
 
                 return Ok(new
@@ -435,6 +448,8 @@ namespace InforumBackend.Controllers
                     user.ProfileImage,
                     user.IsRestricted,
                     user.DateJoined,
+                    user.Address,
+                    user.DOB,
                 };
 
                 return Ok(new
@@ -470,6 +485,8 @@ namespace InforumBackend.Controllers
                     user.Email = model.Email;
                     user.ProfileImage = model.ProfileImage;
                     user.UserName = model.Email;
+                    user.Address = model.Address;
+                    user.DOB = model.DOB;
 
                     var result = await userManager.UpdateAsync(user);
 
@@ -578,6 +595,8 @@ namespace InforumBackend.Controllers
                     user.ProfileImage,
                     user.IsRestricted,
                     user.DateJoined,
+                    user.Address,
+                    user.DOB,
                 };
 
                 return Ok(new
