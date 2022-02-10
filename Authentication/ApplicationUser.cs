@@ -27,6 +27,12 @@ namespace InforumBackend.Authentication
         public Genders Gender { get; set; }
 
         [PersonalData]
+        public string DOB { get; set; }
+
+        [PersonalData]
+        public string Address { get; set; }
+
+        [PersonalData]
         public DateTime DateJoined { get; set; }
 
         public ApplicationUser()

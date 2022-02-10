@@ -16,5 +16,9 @@ namespace InforumBackend.Authentication
         [Column(TypeName = "nvarchar(20)")]
         public Genders Gender { get; set; }
 
+        public string DOB { get; set; }
+
+        public string Address { get; set; }
+
     }
 }
