@@ -325,6 +325,7 @@ namespace InforumBackend.Controllers
                     u.DateJoined,
                     u.Address,
                     u.DOB,
+                    userRole = userManager.GetRolesAsync(u).Result[0]
                 });
 
                 return Ok(new
