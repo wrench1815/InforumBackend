@@ -15,6 +15,8 @@ namespace InforumBackend.Models
 
         public DateTime DatePosted { get; set; }
 
+        public long Vote { get; set; }
+
         // CategoryId as a Relational Field
         [ForeignKey("Category")]
         public long CategoryId { get; set; }
