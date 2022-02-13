@@ -20,11 +20,20 @@ namespace InforumBackend.Controllers
 
         // GET: api/ForumAnswer
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ForumAnswer>>> GetForumAnswer([FromQuery] PageParameter pageParameter)
+        public async Task<ActionResult<IEnumerable<ForumAnswer>>> GetForumAnswer([FromQuery] PageParameter pageParameter, long queryId)
         {
             try
             {
-                var forumAnswerList = _context.ForumAnswer.OrderByDescending(fa => fa.DatePosted);
+                IOrderedQueryable<ForumAnswer> forumAnswerList;
+
+                if (queryId != 0)
+                {
+                    forumAnswerList = _context.ForumAnswer.Where(fa => fa.QueryId == queryId).OrderByDescending(fa => fa.DatePosted);
+                }
+                else
+                {
+                    forumAnswerList = _context.ForumAnswer.OrderByDescending(fa => fa.DatePosted);
+                }
 
                 var paginationMetadata = new PaginationMetadata(forumAnswerList.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
