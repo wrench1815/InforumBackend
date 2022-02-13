@@ -34,7 +34,7 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    Forumquery = paginatedForumQuery,
+                    forumQuery = paginatedForumQuery,
                     pagination = paginationMetadata
                 });
             }
