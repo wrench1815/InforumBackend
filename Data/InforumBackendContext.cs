@@ -26,8 +26,10 @@ namespace InforumBackend.Data
         public DbSet<Home> Home { get; set; }
 
         public DbSet<ForumAnswer> ForumAnswer { get; set; }
-        
+
         public DbSet<ForumQuery> ForumQuery { get; set; }
+
+        public DbSet<ForumSubAnswer> ForumSubAnswer { get; set; }
 
         public DbSet<SubComment> SubComment { get; set; }
 
