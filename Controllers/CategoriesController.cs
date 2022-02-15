@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using InforumBackend.Data;
 using InforumBackend.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.RegularExpressions;
 
 namespace InforumBackend.Controllers
 {
@@ -45,6 +46,31 @@ namespace InforumBackend.Controllers
             return Ok(category);
         }
 
+        // GET: api/Categories/slug/5
+        [HttpGet("slug/{slug}")]
+        public async Task<ActionResult<Category>> GetCategoryBySlug(string slug)
+        {
+            try
+            {
+                var category = await _context.Category.FirstOrDefaultAsync(i => i.Name == slug);
+
+                if (category == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Post not found"
+                    });
+                }
+
+                return Ok(category);
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
+
         // PUT: api/Categories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Roles = "Admin")]
@@ -59,6 +85,9 @@ namespace InforumBackend.Controllers
                     Message = "Check if request data is Correct."
                 });
             }
+
+            var cat_slug = generateSlug(category.Name);
+            category.Slug = cat_slug;
 
             _context.Entry(category).State = EntityState.Modified;
 
@@ -96,13 +125,29 @@ namespace InforumBackend.Controllers
         {
             try
             {
+                var cat_name = category.Name;
+                var cat_exist = await _context.Category.AnyAsync(i => i.Name == cat_name);
+
+                if (cat_exist)
+                {
+                    return BadRequest(new
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "Category Already Exist."
+                    });
+                }
+
+                var cat_slug = generateSlug(category.Name);
+
+                category.Slug = cat_slug;
+
                 _context.Category.Add(category);
                 await _context.SaveChangesAsync();
 
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
-                    Message = "Category created Successfully."
+                    Message = "Category created Successfully.",
                 });
             }
             catch (System.Exception)
@@ -146,6 +191,21 @@ namespace InforumBackend.Controllers
         private bool CategoryExists(long id)
         {
             return _context.Category.Any(e => e.Id == id);
+        }
+
+        // Generate Slugs
+        private string generateSlug(string title)
+        {
+            var slug = title.ToLower();
+
+            // remove all uneeded characters
+            slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            // remove multiple spaces
+            slug = Regex.Replace(slug, @"\s+", " ").Trim();
+            // replace spaces with dashes(-)
+            slug = Regex.Replace(slug, @"\s", "-");
+
+            return slug;
         }
     }
 }
