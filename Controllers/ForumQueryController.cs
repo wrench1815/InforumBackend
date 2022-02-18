@@ -21,7 +21,7 @@ namespace InforumBackend.Controllers
 
         // GET: api/ForumQuery
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ForumQuery>>> GetForumQuery([FromQuery] PageParameter pageParameter, string categorySlug)
+        public async Task<ActionResult<IEnumerable<ForumQuery>>> GetForumQuery([FromQuery] PageParameter pageParameter, string categorySlug, string authorId)
         {
             try
             {
@@ -30,6 +30,10 @@ namespace InforumBackend.Controllers
                 if (categorySlug != null)
                 {
                     forumQuery = _context.ForumQuery.Where(fq => fq.Category.Slug == categorySlug).Include(fq => fq.Category).OrderByDescending(fq => fq.DatePosted);
+                }
+                else if (authorId != null)
+                {
+                    forumQuery = _context.ForumQuery.Where(fq => fq.AuthorId == authorId).Include(fq => fq.Category).OrderByDescending(fq => fq.DatePosted);
                 }
                 else
                 {
