@@ -29,7 +29,7 @@ namespace InforumBackend.Controllers
 
                 if (categorySlug != null)
                 {
-                    forumQuery = _context.ForumQuery.Where(fq => fq.Category.Slug == categorySlug).OrderByDescending(fq => fq.DatePosted);
+                    forumQuery = _context.ForumQuery.Where(fq => fq.Category.Slug == categorySlug).Include(fq => fq.Category).OrderByDescending(fq => fq.DatePosted);
                 }
                 else
                 {
