@@ -21,19 +21,23 @@ namespace InforumBackend.Controllers
 
         // GET: api/ForumQuery
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ForumQuery>>> GetForumQuery([FromQuery] PageParameter pageParameter, string categorySlug, string authorId)
+        public async Task<ActionResult<IEnumerable<ForumQuery>>> GetForumQuery([FromQuery] PageParameter pageParameter, string categorySlug, string authorId, string search)
         {
             try
             {
                 IOrderedQueryable<ForumQuery> forumQuery;
 
-                if (categorySlug != null)
+                if (!String.IsNullOrEmpty(categorySlug))
                 {
                     forumQuery = _context.ForumQuery.Where(fq => fq.Category.Slug == categorySlug).Include(fq => fq.Category).OrderByDescending(fq => fq.DatePosted);
                 }
-                else if (authorId != null)
+                else if (!String.IsNullOrEmpty(authorId))
                 {
                     forumQuery = _context.ForumQuery.Where(fq => fq.AuthorId == authorId).Include(fq => fq.Category).OrderByDescending(fq => fq.DatePosted);
+                }
+                else if (!String.IsNullOrEmpty(search))
+                {
+                    forumQuery = _context.ForumQuery.Where(fq => fq.Title.Contains(search)).Include(fq => fq.Category).OrderByDescending(fq => fq.DatePosted);
                 }
                 else
                 {
