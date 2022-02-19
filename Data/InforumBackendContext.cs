@@ -33,6 +33,8 @@ namespace InforumBackend.Data
 
         public DbSet<SubComment> SubComment { get; set; }
 
+        public DbSet<Vote> Vote { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

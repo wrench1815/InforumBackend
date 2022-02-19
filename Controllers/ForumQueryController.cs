@@ -221,6 +221,123 @@ namespace InforumBackend.Controllers
             }
         }
 
+        // POST: api/ForumQuery/vote/10
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
+        [HttpPost("vote")]
+        public async Task<ActionResult<ForumQuery>> VoteForumQuery(Vote voteModel)
+        {
+            try
+            {
+                // Find if the forum Query Exist or not
+                var forumQuery = await _context.ForumQuery.FindAsync(voteModel.ForumId);
+
+                // Return 404 if the forum Query does not exist
+                // Else Continue
+                if (forumQuery == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Query not found."
+                    });
+                }
+
+                // Check if the Vote Entry Exist or not
+                var voteExist = _context.Vote.Any(v => v.ForumId == voteModel.ForumId && v.UserId == voteModel.UserId);
+
+                // If Vote Entry Exist remove the Vote Entry
+                if (voteExist)
+                {
+                    // Find and remove the Vote Entry
+                    var removeVote = _context.Vote.Remove(_context.Vote.FirstOrDefault(v => v.ForumId == voteModel.ForumId && v.UserId == voteModel.UserId));
+
+                    // -1 the vote count if Vote Entry Successfully Removed
+                    if (removeVote != null)
+                    {
+                        forumQuery.Vote--;
+                    }
+
+                    // Save Changes to the Database
+                    await _context.SaveChangesAsync();
+
+                    // Retutrn OK
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Vote removed Successfully."
+                    });
+                }
+                // Else Add the Vote Entry
+                else
+                {
+                    // Add the Vote Entry
+                    var addVote = _context.Vote.Add(voteModel);
+
+                    // +1 the count if Vote Entry Successfully Added
+                    if (addVote != null)
+                    {
+                        forumQuery.Vote++;
+                    }
+
+                    // Save Changes to the Database
+                    await _context.SaveChangesAsync();
+
+                    // Retutrn OK
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Vote added Successfully."
+                    });
+                }
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        // POST: api/ForumQuery/vote/status
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // [Authorize]
+        [HttpPost("vote/status")]
+        public async Task<ActionResult<ForumQuery>> VoteStatusForumQuery(Vote voteModel)
+        {
+            try
+            {
+                // Find if the forum Query Exist or not
+                var forumQuery = await _context.ForumQuery.FindAsync(voteModel.ForumId);
+
+                // Return 404 if the forum Query does not exist
+                // Else Continue
+                if (forumQuery == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Query not found."
+                    });
+                }
+
+                // Check if the Vote Entry Exist or not
+                var voteExist = _context.Vote.Any(v => v.ForumId == voteModel.ForumId && v.UserId == voteModel.UserId);
+
+                // Retutrn OK
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Vote added Successfully.",
+                    VoteExist = voteExist
+                });
+
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+
         private bool ForumQueryExists(long id)
         {
             return _context.ForumQuery.Any(e => e.Id == id);
