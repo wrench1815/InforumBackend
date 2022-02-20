@@ -21,7 +21,7 @@ namespace InforumBackend.Controllers
 
         // GET: api/ForumQuery
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ForumQuery>>> GetForumQuery([FromQuery] PageParameter pageParameter, string categorySlug, string authorId, string search)
+        public async Task<ActionResult<IEnumerable<ForumQuery>>> GetForumQuery([FromQuery] PageParameter pageParameter, string categorySlug, string authorId, string search, Boolean voteSort)
         {
             try
             {
@@ -38,6 +38,10 @@ namespace InforumBackend.Controllers
                 else if (!String.IsNullOrEmpty(search))
                 {
                     forumQuery = _context.ForumQuery.Where(fq => fq.Title.Contains(search)).Include(fq => fq.Category).OrderByDescending(fq => fq.DatePosted);
+                }
+                else if (voteSort)
+                {
+                    forumQuery = _context.ForumQuery.Include(fq => fq.Category).OrderByDescending(fq => fq.Vote);
                 }
                 else
                 {
