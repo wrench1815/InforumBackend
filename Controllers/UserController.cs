@@ -638,7 +638,7 @@ namespace InforumBackend.Controllers
 
                 return Ok(new
                 {
-                    user = user,
+                    user = partialUser,
                     userRole = userRole
                 });
             }
