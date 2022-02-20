@@ -31,6 +31,8 @@ namespace InforumBackend.Data
 
         public DbSet<ForumSubAnswer> ForumSubAnswer { get; set; }
 
+        public DbSet<Star> Star { get; set; }
+
         public DbSet<SubComment> SubComment { get; set; }
 
         public DbSet<Vote> Vote { get; set; }

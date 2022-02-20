@@ -30,6 +30,9 @@ namespace InforumBackend.Models
         // Date the Blog Post was Added
         public DateTime DatePosted { get; set; }
 
+        // Stars for the Blog Post
+        public long Star { get; set; }
+
         // CategoryId as a Relational Field
         [ForeignKey("Category")]
         public long CategoryId { get; set; }

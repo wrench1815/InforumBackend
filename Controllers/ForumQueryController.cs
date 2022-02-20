@@ -229,7 +229,7 @@ namespace InforumBackend.Controllers
             }
         }
 
-        // POST: api/ForumQuery/vote/10
+        // POST: api/ForumQuery/vote
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPost("vote")]
@@ -307,7 +307,7 @@ namespace InforumBackend.Controllers
 
         // POST: api/ForumQuery/vote/status
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        // [Authorize]
+        [Authorize]
         [HttpPost("vote/status")]
         public async Task<ActionResult<ForumQuery>> VoteStatusForumQuery(Vote voteModel)
         {
@@ -333,8 +333,6 @@ namespace InforumBackend.Controllers
                 // Retutrn OK
                 return Ok(new
                 {
-                    Status = StatusCodes.Status200OK,
-                    Message = "Vote added Successfully.",
                     VoteExist = voteExist
                 });
 

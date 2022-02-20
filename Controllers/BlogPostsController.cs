@@ -21,11 +21,28 @@ namespace InforumBackend.Controllers
 
         // GET: api/BlogPosts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BlogPost>>> GetBlogPost([FromQuery] PageParameter pageParameter)
+        public async Task<ActionResult<IEnumerable<BlogPost>>> GetBlogPost([FromQuery] PageParameter pageParameter, string userId, Boolean starSort)
         {
             try
             {
-                var blogPosts = _context.BlogPost.Include(bp => bp.Category).OrderByDescending(bp => bp.DatePosted);
+                IOrderedQueryable<BlogPost> blogPosts;
+
+                if (starSort && !String.IsNullOrEmpty(userId))
+                {
+                    blogPosts = _context.BlogPost.Where(bp => bp.AuthorId == userId).Include(bp => bp.Category).OrderByDescending(bp => bp.Star);
+                }
+                else if (!String.IsNullOrEmpty(userId))
+                {
+                    blogPosts = _context.BlogPost.Where(bp => bp.AuthorId == userId).Include(bp => bp.Category).OrderByDescending(bp => bp.DatePosted);
+                }
+                else if (starSort)
+                {
+                    blogPosts = _context.BlogPost.Include(bp => bp.Category).OrderByDescending(bp => bp.Star);
+                }
+                else
+                {
+                    blogPosts = _context.BlogPost.Include(bp => bp.Category).OrderByDescending(bp => bp.DatePosted);
+                }
 
                 var paginationMetadata = new PaginationMetadata(blogPosts.Count(), pageParameter.PageNumber, pageParameter.PageSize);
                 Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
@@ -208,6 +225,120 @@ namespace InforumBackend.Controllers
             catch (System.Exception)
             {
 
+                return BadRequest();
+            }
+        }
+
+        // POST: api/BlogPosts/star
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
+        [HttpPost("vote")]
+        public async Task<IActionResult> StarBlogPost(Star starModel)
+        {
+            try
+            {
+                // Find if the Blog Post Exist or not
+                var blogPost = await _context.BlogPost.FindAsync(starModel.BlogPostId);
+
+                // Return 404 if the Blog Post does not exist
+                // Else Continue
+                if (blogPost == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Post not found."
+                    });
+                }
+
+                // Check if the Star Entry Exist or not
+                var starExist = _context.Star.Any(s => s.BlogPostId == starModel.BlogPostId && s.UserId == starModel.UserId);
+
+                // If Star Entry Exist remove the Star Entry
+                if (starExist)
+                {
+                    // Find and remove the Star Entry
+                    var removeStar = _context.Star.Remove(_context.Star.FirstOrDefault(s => s.BlogPostId == starModel.BlogPostId && s.UserId == starModel.UserId));
+
+                    // -1 the vote count if Star Entry Successfully Removed
+                    if (removeStar != null)
+                    {
+                        blogPost.Star--;
+                    }
+
+                    // Save Changes to the Database
+                    await _context.SaveChangesAsync();
+
+                    // Retutrn OK
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Star removed Successfully."
+                    });
+                }
+                // Else Add the Star Entry
+                else
+                {
+                    // Add the Star Entry
+                    var addStar = _context.Star.Add(starModel);
+
+                    // +1 the count if Star Entry Successfully Added
+                    if (addStar != null)
+                    {
+                        blogPost.Star++;
+                    }
+
+                    // Save Changes to the Database
+                    await _context.SaveChangesAsync();
+
+                    // Retutrn OK
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Star added Successfully."
+                    });
+                }
+            }
+            catch (System.Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        // POST: api/BlogPosts/star/status
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
+        [HttpPost("star/status")]
+        public async Task<IActionResult> StarStatusBlogPost(Star starModel)
+        {
+            try
+            {
+                // Find if the Blog Post Exist or not
+                var blogPost = await _context.BlogPost.FindAsync(starModel.BlogPostId);
+
+                // Return 404 if the Blog Post does not exist
+                // Else Continue
+                if (blogPost == null)
+                {
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Post not found."
+                    });
+                }
+
+                // Check if the Star Entry Exist or not
+                var starExist = _context.Star.Any(s => s.BlogPostId == starModel.BlogPostId && s.UserId == starModel.UserId);
+
+                // Retutrn OK
+                return Ok(new
+                {
+                    StarExist = starExist
+                });
+
+            }
+            catch (System.Exception)
+            {
                 return BadRequest();
             }
         }
