@@ -232,7 +232,7 @@ namespace InforumBackend.Controllers
         // POST: api/BlogPosts/star
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
-        [HttpPost("vote")]
+        [HttpPost("star")]
         public async Task<IActionResult> StarBlogPost(Star starModel)
         {
             try
@@ -260,7 +260,7 @@ namespace InforumBackend.Controllers
                     // Find and remove the Star Entry
                     var removeStar = _context.Star.Remove(_context.Star.FirstOrDefault(s => s.BlogPostId == starModel.BlogPostId && s.UserId == starModel.UserId));
 
-                    // -1 the vote count if Star Entry Successfully Removed
+                    // -1 the Star count if Star Entry Successfully Removed
                     if (removeStar != null)
                     {
                         blogPost.Star--;
