@@ -14,8 +14,9 @@ var CustomCORS = "customCORS";
 
 var builder = WebApplication.CreateBuilder(args);
 
+var conString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 builder.Services.AddDbContext<InforumBackendContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("InforumBackendContext")));
+    options.UseSqlServer(conString));
 
 // Add services to the container.
 
@@ -88,9 +89,12 @@ builder.Services.AddAuthentication(options =>
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["Jwt:ValidAudience"],
-            ValidIssuer = builder.Configuration["Jwt:ValidIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+            ValidAudience = Environment.GetEnvironmentVariable("VALID_AUDIENCE"),
+            ValidIssuer = Environment.GetEnvironmentVariable("VALID_ISSUER"),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")))
+            // ValidAudience = builder.Configuration["Jwt:ValidAudience"],
+            // ValidIssuer = builder.Configuration["Jwt:ValidIssuer"],
+            // IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
         };
     });
 
