@@ -18,11 +18,11 @@ Example Configurations; Inflated(typically `secrets.json`)
 
 ```json
 {
-  "AllowedHosts": "*"
+  "AllowedHosts": "*",
   "ConnectionStrings:InforumBackendContext": "Server=localhost;Database=InforumDB;User=testUser;Password=Test@123;",
   "JwtValidIssuer": "Inforum",
   "JwtValidAudience": "Inforum",
-  "JwtSecret": "AVeryRealSecretKey",
+  "JwtSecret": "AVeryRealSecretKey"
 }
 ```
 
@@ -30,13 +30,13 @@ Example Configurations; Non-Inflated(typically `appsettings.json`)
 
 ```json
 {
-  "AllowedHosts": "*"
+  "AllowedHosts": "*",
   "ConnectionStrings": {
     "InforumBackendContext": "Server=localhost;Database=InforumDB;User=testUser;Password=Test@123;"
   },
   "JwtValidIssuer": "Inforum",
   "JwtValidAudience": "Inforum",
-  "JwtSecret": "AVeryRealSecretKey",
+  "JwtSecret": "AVeryRealSecretKey"
 }
 ```
 
