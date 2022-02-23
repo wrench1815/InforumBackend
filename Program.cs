@@ -92,9 +92,9 @@ builder.Services.AddAuthentication(options =>
             // ValidAudience = Environment.GetEnvironmentVariable("VALID_AUDIENCE"),
             // ValidIssuer = Environment.GetEnvironmentVariable("VALID_ISSUER"),
             // IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")))
-            ValidAudience = builder.Configuration["Jwt:ValidAudience"],
-            ValidIssuer = builder.Configuration["Jwt:ValidIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+            ValidAudience = builder.Configuration["Jwt__ValidAudience"],
+            ValidIssuer = builder.Configuration["Jwt__ValidIssuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt__Secret"]))
         };
     });
 
