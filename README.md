@@ -56,6 +56,7 @@ Example DB Connection String
 - `dotnet watch`: to run the application with watcher, useful during development
 - `dotnet ef migrations add '<MigrationMessage>'`: to add Migrations
 - `dotnet ef database update`: to update Database as per latest migrations
+- `dotnet tool restore`: to restore the tools
 
 ## Heroku related Information
 
