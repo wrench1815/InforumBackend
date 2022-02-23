@@ -21,9 +21,16 @@ namespace InforumBackend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Home>>> GetHome()
         {
-            var homeData = await _context.Home.ToListAsync();
+            try
+            {
+                var homeData = await _context.Home.ToListAsync();
 
-            return Ok(homeData);
+                return Ok(homeData);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         // GET: api/Home/5

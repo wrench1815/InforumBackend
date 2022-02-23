@@ -23,6 +23,8 @@ namespace InforumBackend.Data
 
         public DbSet<ContactForm> ContactForm { get; set; }
 
+        public DbSet<FirstRun> FirstRun { get; set; }
+
         public DbSet<Home> Home { get; set; }
 
         public DbSet<ForumAnswer> ForumAnswer { get; set; }
