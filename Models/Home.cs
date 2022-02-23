@@ -4,7 +4,7 @@
 
 		public string Heading { get; set; }
 
-		public string SubHeading { get; set; }
+		// public string SubHeading { get; set; }
 
 		public string HeaderImageLink { get; set; }
 	}
