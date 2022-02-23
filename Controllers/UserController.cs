@@ -50,11 +50,11 @@ namespace InforumBackend.Controllers
                         authClaims.Add(new Claim(ClaimTypes.Role, userRole));
                     }
 
-                    var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                    var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSecret"]));
 
                     var token = new JwtSecurityToken(
-                        issuer: _configuration["JWT:ValidIssuer"],
-                        audience: _configuration["JWT:ValidAudience"],
+                        issuer: _configuration["JwtValidIssuer"],
+                        audience: _configuration["JwtValidAudience"],
                         expires: DateTime.Now.AddDays(7),
                         claims: authClaims,
                         signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
