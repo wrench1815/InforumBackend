@@ -12,9 +12,12 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public HomeController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public HomeController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("HomeController");
         }
 
         // GET: api/Home
@@ -29,6 +32,7 @@ namespace InforumBackend.Controllers
             }
             catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -43,6 +47,7 @@ namespace InforumBackend.Controllers
 
                 if (home == null)
                 {
+                    _logger.LogInformation("Home of id: {0} not found.", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -52,8 +57,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(home);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -66,6 +72,7 @@ namespace InforumBackend.Controllers
         {
             if (id != home.Id)
             {
+                _logger.LogInformation("Home of id: {0} not found.", id);
                 return BadRequest(new
                 {
                     Status = StatusCodes.Status400BadRequest,
@@ -78,6 +85,7 @@ namespace InforumBackend.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Home of id: {0} updated.", id);
 
                 return Ok(new
                 {
@@ -85,10 +93,11 @@ namespace InforumBackend.Controllers
                     Message = "Home data updated Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 if (!HomeExists(id))
                 {
+                    _logger.LogInformation("Home of id: {0} not found.", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -97,6 +106,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError(ex.ToString());
                     return BadRequest();
                 }
             }
@@ -113,14 +123,17 @@ namespace InforumBackend.Controllers
                 _context.Home.Add(home);
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation("Home created.");
+
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
                     Message = "Home data added Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -135,11 +148,13 @@ namespace InforumBackend.Controllers
                 var home = await _context.Home.FindAsync(id);
                 if (home == null)
                 {
+                    _logger.LogInformation("Home of id: {0} not found.", id);
                     return NotFound();
                 }
 
                 _context.Home.Remove(home);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Home of id: {0} deleted.", id);
 
                 return Ok(new
                 {
@@ -147,8 +162,9 @@ namespace InforumBackend.Controllers
                     Message = "Home deleted Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
