@@ -18,9 +18,12 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public ContactFormsController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public ContactFormsController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("ContactFormsController");
         }
 
         // GET: api/ContactForms
@@ -28,18 +31,27 @@ namespace InforumBackend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ContactForm>>> GetContactForm([FromQuery] PageParameter pageParameter)
         {
-            var contactForms = _context.ContactForm.OrderByDescending(cf => cf.CreatedOn);
-
-            var paginationMetadata = new PaginationMetadata(contactForms.Count(), pageParameter.PageNumber, pageParameter.PageSize);
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
-
-            var forms = await contactForms.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
-
-            return Ok(new
+            try
             {
-                forms = forms,
-                pagination = paginationMetadata
-            });
+                var contactForms = _context.ContactForm.OrderByDescending(cf => cf.CreatedOn);
+
+                var paginationMetadata = new PaginationMetadata(contactForms.Count(), pageParameter.PageNumber, pageParameter.PageSize);
+                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
+
+                var forms = await contactForms.Skip((pageParameter.PageNumber - 1) * pageParameter.PageSize).Take(pageParameter.PageSize).ToListAsync();
+
+                return Ok(new
+                {
+                    forms = forms,
+                    pagination = paginationMetadata
+                });
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
+
         }
 
         // GET: api/ContactForms/5
@@ -47,18 +59,27 @@ namespace InforumBackend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ContactForm>> GetContactForm(long id)
         {
-            var contactForm = await _context.ContactForm.FindAsync(id);
-
-            if (contactForm == null)
+            try
             {
-                return NotFound(new
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Message = "Contact Form not Fount."
-                });
-            }
+                var contactForm = await _context.ContactForm.FindAsync(id);
 
-            return Ok(contactForm);
+                if (contactForm == null)
+                {
+                    _logger.LogError("ContactForm with id {0} not found", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Contact Form not Fount."
+                    });
+                }
+
+                return Ok(contactForm);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
         }
 
         // PUT: api/ContactForms/5
@@ -67,20 +88,22 @@ namespace InforumBackend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutContactForm(long id, ContactForm contactForm)
         {
-            if (id != contactForm.Id)
-            {
-                return BadRequest(new
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "Check if Form Data is Valid or not."
-                });
-            }
-
-            _context.Entry(contactForm).State = EntityState.Modified;
-
             try
             {
+                if (id != contactForm.Id)
+                {
+                    _logger.LogError("ContactForm with id {0} not found", id);
+                    return BadRequest(new
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "Check if Form Data is Valid or not."
+                    });
+                }
+
+                _context.Entry(contactForm).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("ContactForm with id {0} updated", id);
 
                 return StatusCode(StatusCodes.Status200OK, new
                 {
@@ -88,10 +111,11 @@ namespace InforumBackend.Controllers
                     Message = "Contact Form Updated Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 if (!ContactFormExists(id))
                 {
+                    _logger.LogError("ContactForm with id {0} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -100,6 +124,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError(ex.ToString());
                     return BadRequest();
                 }
             }
@@ -115,14 +140,17 @@ namespace InforumBackend.Controllers
                 _context.ContactForm.Add(contactForm);
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation("ContactForm Added Successfully");
+
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
                     Message = "Contact Form added Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -132,19 +160,21 @@ namespace InforumBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteContactForm(long id)
         {
-            var contactForm = await _context.ContactForm.FindAsync(id);
-            if (contactForm == null)
-            {
-                return NotFound(new
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Message = "Contact Form not Found."
-                });
-            }
             try
             {
+                var contactForm = await _context.ContactForm.FindAsync(id);
+                if (contactForm == null)
+                {
+                    _logger.LogError("ContactForm with id {0} not found", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Contact Form not Found."
+                    });
+                }
                 _context.ContactForm.Remove(contactForm);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("ContactForm with id {0} deleted", id);
 
                 return Ok(new
                 {
@@ -152,8 +182,9 @@ namespace InforumBackend.Controllers
                     Message = "Contact Form deleted Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
