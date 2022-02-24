@@ -13,9 +13,12 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public ForumSubAnswersController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public ForumSubAnswersController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("ForumSubAnswersController");
         }
 
         // GET: api/ForumSubAnswers
@@ -46,8 +49,9 @@ namespace InforumBackend.Controllers
                     Pagination = paginationMetadata
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -62,6 +66,7 @@ namespace InforumBackend.Controllers
 
                 if (subAnswer == null)
                 {
+                    _logger.LogError("ForumSubAnswer with id {id} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -71,8 +76,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(subAnswer);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -83,20 +89,23 @@ namespace InforumBackend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSubAnswer(long id, ForumSubAnswer subAnswer)
         {
-            if (id != subAnswer.Id)
-            {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    Message = "Failed to update Sub Answer. Check if the Data is Correct."
-                });
-            }
-
             try
             {
+                if (id != subAnswer.Id)
+                {
+                    _logger.LogError("ForumSubAnswer with id {id} not found", id);
+                    return BadRequest(new
+                    {
+                        Status = "Error",
+                        Message = "Failed to update Sub Answer. Check if the Data is Correct."
+                    });
+                }
+
                 _context.Entry(subAnswer).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("ForumSubAnswer with id {id} updated", id);
 
                 return Ok(new
                 {
@@ -104,10 +113,11 @@ namespace InforumBackend.Controllers
                     Message = "Sub Answer updated Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 if (!SubAnswerExists(id))
                 {
+                    _logger.LogError("ForumSubAnswer with id {id} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -117,6 +127,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError(ex.ToString());
                     return BadRequest();
                 }
             }
@@ -134,14 +145,17 @@ namespace InforumBackend.Controllers
                 _context.ForumSubAnswer.Add(subAnswer);
                 await _context.SaveChangesAsync(); // save the object
 
+                _logger.LogInformation("SubAnswer Created Successfully");
+
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
                     Message = "Sub Answer added Succesfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -151,20 +165,24 @@ namespace InforumBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteForumSubAnswer(long id)
         {
-            var subAnswer = await _context.ForumSubAnswer.FindAsync(id);
-            if (subAnswer == null)
-            {
-                return NotFound(new
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Message = "Sub Answer not found."
-                });
-            }
-
             try
             {
+                var subAnswer = await _context.ForumSubAnswer.FindAsync(id);
+
+                if (subAnswer == null)
+                {
+                    _logger.LogError("ForumSubAnswer with id {id} not found", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Sub Answer not found."
+                    });
+                }
+
                 _context.ForumSubAnswer.Remove(subAnswer);
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("ForumSubAnswer with id {id} deleted", id);
 
                 return Ok(new
                 {
@@ -172,8 +190,9 @@ namespace InforumBackend.Controllers
                     Message = "Sub Answer deleted Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
