@@ -14,9 +14,12 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public ForumQueryController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public ForumQueryController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("ForumQueryController");
         }
 
         // GET: api/ForumQuery
@@ -59,8 +62,9 @@ namespace InforumBackend.Controllers
                     pagination = paginationMetadata
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -75,6 +79,7 @@ namespace InforumBackend.Controllers
 
                 if (forumQuery == null)
                 {
+                    _logger.LogError("ForumQuery with id {0} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -84,8 +89,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(forumQuery);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -100,6 +106,7 @@ namespace InforumBackend.Controllers
 
                 if (forumQuery == null)
                 {
+                    _logger.LogError("ForumQuery with slug {0} not found", slug);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -109,8 +116,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(forumQuery);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -121,23 +129,26 @@ namespace InforumBackend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutForumQuery(long id, ForumQuery forumQuery)
         {
-            if (id != forumQuery.Id)
-            {
-                return BadRequest(new
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "Check if the Query Data is valid or not."
-                });
-            }
-
-            // generate slug based on the PUT data
-            forumQuery.Slug = generateSlug(forumQuery.Title, id);
-
-            _context.Entry(forumQuery).State = EntityState.Modified;
-
             try
             {
+                if (id != forumQuery.Id)
+                {
+                    _logger.LogError("ForumQuery with id {0} not found", id);
+                    return BadRequest(new
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "Check if the Query Data is valid or not."
+                    });
+                }
+
+                // generate slug based on the PUT data
+                forumQuery.Slug = generateSlug(forumQuery.Title, id);
+
+                _context.Entry(forumQuery).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("ForumQuery with id {0} updated", id);
 
                 return StatusCode(StatusCodes.Status200OK, new
                 {
@@ -145,10 +156,11 @@ namespace InforumBackend.Controllers
                     Message = "Query updated Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 if (!ForumQueryExists(id))
                 {
+                    _logger.LogError("ForumQuery with id {0} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -157,6 +169,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError(ex.ToString());
                     return BadRequest();
                 }
             }
@@ -174,16 +187,21 @@ namespace InforumBackend.Controllers
                 _context.ForumQuery.Add(forumQuery);
                 await _context.SaveChangesAsync(); // save the object
 
+                _logger.LogInformation("ForumQuery created Successfully");
+
                 // Get Title and Id from the saved ForumQuery object and generate slug
                 var slug = generateSlug(forumQuery.Title, forumQuery.Id);
 
                 // assign generated slug to the ForumQuery object
                 forumQuery.Slug = slug;
 
+                _logger.LogInformation("Assign Slug: {0} to the ForumQuery object", slug);
+
                 // update and save the object
                 _context.Update(forumQuery);
 
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("ForumQuery with id {0} updated", forumQuery.Id);
 
                 return StatusCode(StatusCodes.Status201Created, new
                 {
@@ -191,8 +209,9 @@ namespace InforumBackend.Controllers
                     Message = "Query Aded Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -202,20 +221,41 @@ namespace InforumBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteForumQuery(long id)
         {
-            var forumQuery = await _context.ForumQuery.FindAsync(id);
-            if (forumQuery == null)
-            {
-                return NotFound(new
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Message = "Query not found."
-                });
-            }
-
             try
             {
+                var forumQuery = await _context.ForumQuery.FindAsync(id);
+
+                if (forumQuery == null)
+                {
+                    _logger.LogError("ForumQuery with id {0} not found", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Query not found."
+                    });
+                }
+
+                // Find all ForumAmswers associated with the ForumQuery
+                var forumAnswers = await _context.ForumAnswer.Where(fa => fa.QueryId == id).ToListAsync();
+
+                // Find all ForumSubAnswers of all ForumAnswers
+                var forumSubAnswers = await _context.ForumSubAnswer.Where(fsa => forumAnswers.Select(fa => fa.Id).Contains(fsa.QueryAnswerId)).ToListAsync();
+
+                // Delete all ForumSubAnswers
+                _context.ForumSubAnswer.RemoveRange(forumSubAnswers);
+
+                _logger.LogInformation("ForumSubAnswers deleted Successfully");
+
+                // Delete all ForumAnswers
+                _context.ForumAnswer.RemoveRange(forumAnswers);
+
+                _logger.LogInformation("ForumAnswers deleted Successfully");
+
                 _context.ForumQuery.Remove(forumQuery);
+                _logger.LogInformation("ForumQuery of Id: {0} deleted Successfully", id);
+
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Save changes to the database");
 
                 return Ok(new
                 {
@@ -223,8 +263,9 @@ namespace InforumBackend.Controllers
                     Message = "Query deleted Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -244,6 +285,7 @@ namespace InforumBackend.Controllers
                 // Else Continue
                 if (forumQuery == null)
                 {
+                    _logger.LogError("ForumQuery with id {0} not found", voteModel.ForumId);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -263,11 +305,15 @@ namespace InforumBackend.Controllers
                     // -1 the vote count if Vote Entry Successfully Removed
                     if (removeVote != null)
                     {
+                        _logger.LogInformation("Vote Entry of ForumQuery with id {0} removed Successfully", voteModel.ForumId);
                         forumQuery.Vote--;
-                    }
 
-                    // Save Changes to the Database
-                    await _context.SaveChangesAsync();
+                        _logger.LogInformation("Vote Count of ForumQuery with id {0} Decremented Successfully", voteModel.ForumId);
+
+                        // Save Changes to the Database
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Save changes to the database");
+                    }
 
                     // Retutrn OK
                     return Ok(new
@@ -285,11 +331,15 @@ namespace InforumBackend.Controllers
                     // +1 the count if Vote Entry Successfully Added
                     if (addVote != null)
                     {
+                        _logger.LogInformation("Vote Entry of ForumQuery with id {0} added Successfully", voteModel.ForumId);
                         forumQuery.Vote++;
-                    }
 
-                    // Save Changes to the Database
-                    await _context.SaveChangesAsync();
+                        _logger.LogInformation("Vote Count of ForumQuery with id {0} incremented Successfully", voteModel.ForumId);
+
+                        // Save Changes to the Database
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Save changes to the database");
+                    }
 
                     // Retutrn OK
                     return Ok(new
@@ -299,8 +349,9 @@ namespace InforumBackend.Controllers
                     });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -320,6 +371,7 @@ namespace InforumBackend.Controllers
                 // Else Continue
                 if (forumQuery == null)
                 {
+                    _logger.LogError("ForumQuery with id {0} not found", voteModel.ForumId);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -337,8 +389,9 @@ namespace InforumBackend.Controllers
                 });
 
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -369,6 +422,8 @@ namespace InforumBackend.Controllers
             slug = Regex.Replace(slug, @"\s", "-");
             // concatenate slug and id
             slug = slug + "-" + id;
+
+            _logger.LogInformation("Slug generated Successfully");
 
             return slug;
         }
