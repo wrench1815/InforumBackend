@@ -216,21 +216,34 @@ namespace InforumBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBlogPost(long id)
         {
-            var blogPost = await _context.BlogPost.FindAsync(id);
-
-            if (blogPost == null)
-            {
-                _logger.LogInformation("BlogPost of id: {0} not found.", id);
-                return NotFound(new
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Message = "Post not found"
-
-                });
-            }
-
             try
             {
+                var blogPost = await _context.BlogPost.FindAsync(id);
+
+                if (blogPost == null)
+                {
+                    _logger.LogInformation("BlogPost of id: {0} not found.", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Post not found"
+
+                    });
+                }
+
+                // Find Comments for the BlogPost
+                var comments = await _context.Comment.Where(c => c.PostId == id).ToListAsync();
+                // find SubComments of all the Comments
+                var subComments = await _context.SubComment.Where(sc => comments.Select(c => c.Id).Contains(sc.CommentId)).ToListAsync();
+
+                // Delete all the SubComments
+                _context.SubComment.RemoveRange(subComments);
+                _logger.LogInformation("SubComments of BlogPost of id: {0} deleted.", id);
+                // Delete all the Comments
+                _context.Comment.RemoveRange(comments);
+                _logger.LogInformation("Comments of BlogPost of id: {0} deleted.", id);
+
+                // De;ete the BlogPost
                 _context.BlogPost.Remove(blogPost);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("BlogPost of id: {0} deleted.", id);
