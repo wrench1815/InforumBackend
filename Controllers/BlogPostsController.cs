@@ -212,7 +212,7 @@ namespace InforumBackend.Controllers
         }
 
         // DELETE: api/BlogPosts/5
-        [Authorize(Roles = "Editor, Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBlogPost(long id)
         {
@@ -235,6 +235,8 @@ namespace InforumBackend.Controllers
                 var comments = await _context.Comment.Where(c => c.PostId == id).ToListAsync();
                 // find SubComments of all the Comments
                 var subComments = await _context.SubComment.Where(sc => comments.Select(c => c.Id).Contains(sc.CommentId)).ToListAsync();
+                // Find all Stars for the BlogPost
+                var stars = await _context.Star.Where(s => s.BlogPostId == id).ToListAsync();
 
                 // Delete all the SubComments
                 _context.SubComment.RemoveRange(subComments);
@@ -242,6 +244,9 @@ namespace InforumBackend.Controllers
                 // Delete all the Comments
                 _context.Comment.RemoveRange(comments);
                 _logger.LogInformation("Comments of BlogPost of id: {0} deleted.", id);
+                // Delete all the Stars
+                _context.Star.RemoveRange(stars);
+                _logger.LogInformation("Stars of BlogPost of id: {0} deleted.", id);
 
                 // De;ete the BlogPost
                 _context.BlogPost.Remove(blogPost);
