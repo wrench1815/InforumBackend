@@ -116,7 +116,7 @@ namespace InforumBackend.Controllers
                     });
                 }
 
-                // Check if roles Exist, if not create then unless skip
+                // Check if roles Exist, if not, create them unless skip
                 if (!await roleManager.RoleExistsAsync(UserRoles.Admin) && !await roleManager.RoleExistsAsync(UserRoles.User) && !await roleManager.RoleExistsAsync(UserRoles.Editor))
                 {
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
@@ -130,6 +130,44 @@ namespace InforumBackend.Controllers
 
                 // Add newAdmin to Admin Role
                 await userManager.AddToRoleAsync(newAdmin, UserRoles.Admin);
+
+                _logger.LogInformation("Admin Created.");
+
+                // Create a Default User
+                ApplicationUser defaultUser = new ApplicationUser
+                {
+                    UserName = "defaultUser@mail.com",
+                    Email = "defaultUser@mail.com",
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    FirstName = "Default",
+                    LastName = "User",
+                    Gender = Genders.Male,
+                    ProfileImage = "https://res.cloudinary.com/inforum/image/upload/v1645625776/Defaults/profile_image_dummy_oawg87.png",
+                    IsRestricted = false,
+                    Address = "Void City, Near Eye, Black Hole",
+                    DOB = ""
+                };
+
+                // Generate a random password
+                string defaultPassword = Guid.NewGuid().ToString().Substring(0, 8);
+
+                // Create the default user
+                var createDefaultUser = await userManager.CreateAsync(defaultUser, defaultPassword);
+
+                if (!createDefaultUser.Succeeded)
+                {
+                    _logger.Log(LogLevel.Error, createDefaultUser.Errors.ToString());
+
+                    return BadRequest(new
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "Default User Creation Failed."
+                    });
+                }
+
+                // Assign role to Default User
+                await userManager.AddToRoleAsync(defaultUser, UserRoles.User);
+                _logger.LogInformation("Default User Created.");
 
                 // Initialize base Category
                 Category generalCat = new Category
