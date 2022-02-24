@@ -241,6 +241,9 @@ namespace InforumBackend.Controllers
                 // Find all ForumSubAnswers of all ForumAnswers
                 var forumSubAnswers = await _context.ForumSubAnswer.Where(fsa => forumAnswers.Select(fa => fa.Id).Contains(fsa.QueryAnswerId)).ToListAsync();
 
+                // Find all Votes of ForumQuery
+                var forumVotes = await _context.Vote.Where(fv => fv.ForumId == id).ToListAsync();
+
                 // Delete all ForumSubAnswers
                 _context.ForumSubAnswer.RemoveRange(forumSubAnswers);
 
@@ -251,6 +254,12 @@ namespace InforumBackend.Controllers
 
                 _logger.LogInformation("ForumAnswers deleted Successfully");
 
+                // Delete all ForumVotes
+                _context.Vote.RemoveRange(forumVotes);
+
+                _logger.LogInformation("ForumVotes deleted Successfully");
+
+                // Delete Forum Query
                 _context.ForumQuery.Remove(forumQuery);
                 _logger.LogInformation("ForumQuery of Id: {0} deleted Successfully", id);
 
