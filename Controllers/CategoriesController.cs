@@ -122,7 +122,7 @@ namespace InforumBackend.Controllers
                     return BadRequest(new
                     {
                         Status = StatusCodes.Status400BadRequest,
-                        Message = "Category with name: " + category.Name + " already exists."
+                        Message = "Category already exists."
                     });
                 }
 
