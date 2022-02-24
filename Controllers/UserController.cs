@@ -880,9 +880,30 @@ namespace InforumBackend.Controllers
                 // find User's all BlogPosts
                 var userBlogPosts = await _context.BlogPost.Where(b => b.AuthorId == user.Id).ToListAsync();
 
+                // find User's all Comments
+                var userComments = await _context.Comment.Where(c => c.UserId == user.Id).ToListAsync();
+
+                // Find User's all Subcomments
+                var userSubComments = await _context.SubComment.Where(sc => sc.UserId == user.Id).ToListAsync();
+
+                // Find User's all Stars on BlogPosts
+                var userStars = await _context.Star.Where(s => s.UserId == user.Id).ToListAsync();
+
+                // Find User's all ForumQueries
+                var userForumQueries = await _context.ForumQuery.Where(fq => fq.AuthorId == user.Id).ToListAsync();
+
+                // Find User's all ForumAnswers
+                var userForumAnswers = await _context.ForumAnswer.Where(fa => fa.UserId == user.Id).ToListAsync();
+
+                // Find User's all ForumSubAnswers
+                var userForumSubAnswers = await _context.ForumSubAnswer.Where(fsa => fsa.UserId == user.Id).ToListAsync();
+
+                // Find User's all Votes on Forum Queries
+                var userLikes = await _context.Vote.Where(l => l.UserId == user.Id).ToListAsync();
+
+                // if User has BlogPosts, change their Author to Default User
                 if (userBlogPosts.Count > 0)
                 {
-                    // if User has BlogPosts, change their Author to Default User
                     foreach (var blogPost in userBlogPosts)
                     {
                         blogPost.AuthorId = defaultUser.Id;
@@ -895,12 +916,9 @@ namespace InforumBackend.Controllers
                     _logger.LogInformation("User: {0} BlogPosts Author changed to Default User.", user.Id);
                 }
 
-                // find User's all Comments
-                var userComments = await _context.Comment.Where(c => c.UserId == user.Id).ToListAsync();
-
+                // if User has Comments, change their Author to Default User
                 if (userComments.Count > 0)
                 {
-                    // if User has Comments, change their Author to Default User
                     foreach (var comment in userComments)
                     {
                         comment.UserId = defaultUser.Id;
@@ -913,12 +931,9 @@ namespace InforumBackend.Controllers
                     _logger.LogInformation("User: {0} Comments Author changed to Default User.", user.Id);
                 }
 
-                // Find User's all Subcomments
-                var userSubComments = await _context.SubComment.Where(sc => sc.UserId == user.Id).ToListAsync();
-
+                // if User has Subcomments, change their Author to Default User
                 if (userSubComments.Count > 0)
                 {
-                    // if User has Subcomments, change their Author to Default User
                     foreach (var subComment in userSubComments)
                     {
                         subComment.UserId = defaultUser.Id;
@@ -931,12 +946,9 @@ namespace InforumBackend.Controllers
                     _logger.LogInformation("User: {0} SubComments Author changed to Default User.", user.Id);
                 }
 
-                // Find User's all Stars on BlogPosts
-                var userStars = await _context.Star.Where(s => s.UserId == user.Id).ToListAsync();
-
+                // if User has Stars, remove them
                 if (userStars.Count > 0)
                 {
-                    // if User has Stars, remove them
                     foreach (var star in userStars)
                     {
                         _context.Remove(star);
@@ -948,12 +960,9 @@ namespace InforumBackend.Controllers
                     _logger.LogInformation("User: {0} Stars removed.", user.Id);
                 }
 
-                // Find User's all ForumQueries
-                var userForumQueries = await _context.ForumQuery.Where(fq => fq.AuthorId == user.Id).ToListAsync();
-
+                // if User has ForumQueries, change their Author to Default User
                 if (userForumQueries.Count > 0)
                 {
-                    // if User has ForumQueries, change their Author to Default User
                     foreach (var forumQuery in userForumQueries)
                     {
                         forumQuery.AuthorId = defaultUser.Id;
@@ -966,12 +975,9 @@ namespace InforumBackend.Controllers
                     _logger.LogInformation("User: {0} ForumQueries Author changed to Default User.", user.Id);
                 }
 
-                // Find User's all ForumAnswers
-                var userForumAnswers = await _context.ForumAnswer.Where(fa => fa.UserId == user.Id).ToListAsync();
-
+                // if User has ForumAnswers, change their Author to Default User
                 if (userForumAnswers.Count > 0)
                 {
-                    // if User has ForumAnswers, change their Author to Default User
                     foreach (var forumAnswer in userForumAnswers)
                     {
                         forumAnswer.UserId = defaultUser.Id;
@@ -984,12 +990,9 @@ namespace InforumBackend.Controllers
                     _logger.LogInformation("User: {0} ForumAnswers Author changed to Default User.", user.Id);
                 }
 
-                // Find User's all ForumSubAnswers
-                var userForumSubAnswers = await _context.ForumSubAnswer.Where(fsa => fsa.UserId == user.Id).ToListAsync();
-
+                // if User has ForumSubAnswers, change their Author to Default User
                 if (userForumSubAnswers.Count > 0)
                 {
-                    // if User has ForumSubAnswers, change their Author to Default User
                     foreach (var forumSubAnswer in userForumSubAnswers)
                     {
                         forumSubAnswer.UserId = defaultUser.Id;
@@ -1002,12 +1005,9 @@ namespace InforumBackend.Controllers
                     _logger.LogInformation("User: {0} ForumSubAnswers Author changed to Default User.", user.Id);
                 }
 
-                // Find User's all Votes on Forum Queries
-                var userLikes = await _context.Vote.Where(l => l.UserId == user.Id).ToListAsync();
-
+                // if User has Votes, remove them
                 if (userLikes.Count > 0)
                 {
-                    // if User has Votes, remove them
                     foreach (var like in userLikes)
                     {
                         _context.Remove(like);
@@ -1018,7 +1018,6 @@ namespace InforumBackend.Controllers
 
                     _logger.LogInformation("User: {0} Votes removed.", user.Id);
                 }
-
 
                 var result = await userManager.DeleteAsync(user);
 
