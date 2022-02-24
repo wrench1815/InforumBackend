@@ -13,9 +13,12 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public SubCommentsController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public SubCommentsController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("SubCommentsController");
         }
 
         // GET: api/SubComments
@@ -46,9 +49,9 @@ namespace InforumBackend.Controllers
                     Pagination = paginationMetadata
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -63,6 +66,7 @@ namespace InforumBackend.Controllers
 
                 if (subComment == null)
                 {
+                    _logger.LogError("SubComment with id {0} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -72,8 +76,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(subComment);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -84,20 +89,23 @@ namespace InforumBackend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSubComment(long id, SubComment subComment)
         {
-            if (id != subComment.Id)
-            {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    Message = "Failed to update Sub Comment. Check if the Data is Correct."
-                });
-            }
-
             try
             {
+                if (id != subComment.Id)
+                {
+                    _logger.LogError("SubComment with id {0} not found", id);
+                    return BadRequest(new
+                    {
+                        Status = "Error",
+                        Message = "Failed to update Sub Comment. Check if the Data is Correct."
+                    });
+                }
+
                 _context.Entry(subComment).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("SubComment with id {0} updated", id);
 
                 return Ok(new
                 {
@@ -105,10 +113,11 @@ namespace InforumBackend.Controllers
                     Message = "Sub Comment updated Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 if (!SubCommentExists(id))
                 {
+                    _logger.LogError("SubComment with id {0} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -118,6 +127,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError(ex.ToString());
                     return BadRequest();
                 }
             }
@@ -135,14 +145,17 @@ namespace InforumBackend.Controllers
                 _context.SubComment.Add(subComment);
                 await _context.SaveChangesAsync(); // save the object
 
+                _logger.LogInformation("SubComment created Successfully");
+
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
                     Message = "Sub Comment added Succesfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -152,21 +165,25 @@ namespace InforumBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSubComment(long id)
         {
-            var subComment = await _context.SubComment.FindAsync(id);
-            if (subComment == null)
-            {
-                return NotFound(new
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Message = "Sub Comment not found."
-
-                });
-            }
-
             try
             {
+                var subComment = await _context.SubComment.FindAsync(id);
+
+                if (subComment == null)
+                {
+                    _logger.LogError("SubComment with id {0} not found", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Sub Comment not found."
+
+                    });
+                }
+
                 _context.SubComment.Remove(subComment);
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("SubComment with id {0} deleted", id);
 
                 return Ok(new
                 {
@@ -174,8 +191,9 @@ namespace InforumBackend.Controllers
                     Message = "Sub Comment deleted Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
