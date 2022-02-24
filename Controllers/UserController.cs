@@ -1,4 +1,5 @@
 using InforumBackend.Authentication;
+using InforumBackend.Data;
 using InforumBackend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,12 +20,16 @@ namespace InforumBackend.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration _configuration;
+        private readonly ILogger _logger;
+        private readonly InforumBackendContext _context;
 
-        public UserController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public UserController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, ILoggerFactory logger, InforumBackendContext context)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             _configuration = configuration;
+            _logger = logger.CreateLogger("UserController");
+            _context = context;
         }
 
         // Logs user in and returns a JWT token
@@ -38,6 +43,10 @@ namespace InforumBackend.Controllers
 
                 if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
                 {
+                    _logger.LogInformation("User Found.");
+
+                    _logger.LogInformation("Generating JWT Token.");
+
                     var userRoles = await userManager.GetRolesAsync(user);
 
                     var authClaims = new List<Claim>{
@@ -60,6 +69,8 @@ namespace InforumBackend.Controllers
                         signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                     );
 
+                    _logger.LogInformation("JWT Token generated.");
+
                     return Ok(new
                     {
                         id = user.Id,
@@ -68,14 +79,18 @@ namespace InforumBackend.Controllers
                         expiration = token.ValidTo
                     });
                 }
+
+                _logger.LogInformation("User not found.");
+
                 return NotFound(new
                 {
                     Status = StatusCodes.Status404NotFound,
                     message = "Email or password is incorrect."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -90,6 +105,7 @@ namespace InforumBackend.Controllers
                 var userExists = await userManager.FindByEmailAsync(model.Email);
                 if (userExists != null)
                 {
+                    _logger.LogError("User already exists.");
                     return BadRequest(new
                     {
                         Status = StatusCodes.Status400BadRequest,
@@ -115,6 +131,7 @@ namespace InforumBackend.Controllers
                 var result = await userManager.CreateAsync(user, model.Password);
                 if (!result.Succeeded)
                 {
+                    _logger.LogError("User creation failed.");
                     return StatusCode(StatusCodes.Status400BadRequest, new
                     {
                         Status = StatusCodes.Status400BadRequest,
@@ -127,9 +144,11 @@ namespace InforumBackend.Controllers
                 {
                     // first create the User role
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
+                    _logger.LogInformation("User Role created.");
 
                     // then assign user the User role
                     await userManager.AddToRoleAsync(user, UserRoles.User);
+                    _logger.LogInformation("User Role assigned.");
                 }
 
                 // if User role exist
@@ -137,21 +156,25 @@ namespace InforumBackend.Controllers
                 {
                     // assign user the User role
                     await userManager.AddToRoleAsync(user, UserRoles.User);
+                    _logger.LogInformation("User Role assigned.");
                 }
 
+                _logger.LogInformation("User created.");
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
                     Message = "User created successfully!"
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
 
         // Register a New Admin
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]
         [Route("register-admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
@@ -162,6 +185,7 @@ namespace InforumBackend.Controllers
 
                 if (userExists != null)
                 {
+                    _logger.LogError("User already exists.");
                     return StatusCode(StatusCodes.Status400BadRequest, new
                     {
                         Status = StatusCodes.Status400BadRequest,
@@ -187,6 +211,7 @@ namespace InforumBackend.Controllers
 
                 if (!result.Succeeded)
                 {
+                    _logger.LogError("User creation failed.");
                     return StatusCode(StatusCodes.Status400BadRequest, new
                     {
                         Status = StatusCodes.Status400BadRequest,
@@ -199,9 +224,11 @@ namespace InforumBackend.Controllers
                 {
                     // first create Admin role
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
+                    _logger.LogInformation("Admin Role created.");
 
                     // then assign user the Admin role
                     await userManager.AddToRoleAsync(user, UserRoles.Admin);
+                    _logger.LogInformation("Admin Role assigned.");
                 }
 
                 // if Admin role exist
@@ -209,7 +236,10 @@ namespace InforumBackend.Controllers
                 {
                     // assogn user the Admin role
                     await userManager.AddToRoleAsync(user, UserRoles.Admin);
+                    _logger.LogInformation("Admin Role assigned.");
                 }
+
+                _logger.LogInformation("Admin created.");
 
                 return StatusCode(StatusCodes.Status201Created, new
                 {
@@ -217,15 +247,16 @@ namespace InforumBackend.Controllers
                     Message = "Admin created successfully!"
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
 
 
         // Register a New Editor
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]
         [Route("register-editor")]
         public async Task<IActionResult> RegisterEditor([FromBody] RegisterModel model)
@@ -236,6 +267,7 @@ namespace InforumBackend.Controllers
 
                 if (userExists != null)
                 {
+                    _logger.LogError("User already exists.");
                     return StatusCode(StatusCodes.Status400BadRequest, new
                     {
                         Status = StatusCodes.Status400BadRequest,
@@ -261,6 +293,7 @@ namespace InforumBackend.Controllers
 
                 if (!result.Succeeded)
                 {
+                    _logger.LogError("User creation failed.");
                     return StatusCode(StatusCodes.Status400BadRequest, new
                     {
                         Status = StatusCodes.Status400BadRequest,
@@ -273,9 +306,11 @@ namespace InforumBackend.Controllers
                 {
                     // firs create Editor role
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Editor));
+                    _logger.LogInformation("Editor Role created.");
 
                     // then assign user the Editor role
                     await userManager.AddToRoleAsync(user, UserRoles.Editor);
+                    _logger.LogInformation("Editor Role assigned.");
                 }
 
                 // if Editor role exist
@@ -283,16 +318,20 @@ namespace InforumBackend.Controllers
                 {
                     // assign user the Editor role
                     await userManager.AddToRoleAsync(user, UserRoles.Editor);
+                    _logger.LogInformation("Editor Role assigned.");
+
                 }
 
+                _logger.LogInformation("Editor created.");
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
                     Message = "Editor created successfully!"
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -334,9 +373,9 @@ namespace InforumBackend.Controllers
                     pagination = paginationMetadata
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -372,9 +411,9 @@ namespace InforumBackend.Controllers
                     users = partialUser,
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -409,9 +448,9 @@ namespace InforumBackend.Controllers
                     users = partialUser,
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -447,9 +486,9 @@ namespace InforumBackend.Controllers
                     users = partialUser,
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -466,6 +505,7 @@ namespace InforumBackend.Controllers
 
                 if (user == null)
                 {
+                    _logger.LogError("User not found.");
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -495,8 +535,9 @@ namespace InforumBackend.Controllers
                     userRole = userRole
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -529,12 +570,15 @@ namespace InforumBackend.Controllers
 
                     if (!result.Succeeded)
                     {
+                        _logger.LogError("User not updated.");
                         return StatusCode(StatusCodes.Status400BadRequest, new
                         {
                             Status = StatusCodes.Status400BadRequest,
                             Message = "Failed to Update User! Please check user details and try again."
                         });
                     }
+
+                    _logger.LogInformation("User updated.");
 
                     return Ok(new
                     {
@@ -543,14 +587,17 @@ namespace InforumBackend.Controllers
                     });
                 }
 
+                _logger.LogError("Access Denied.");
+
                 return StatusCode(StatusCodes.Status403Forbidden, new
                 {
                     Status = StatusCodes.Status403Forbidden,
                     Message = "You are not authorized to update this user!"
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -576,6 +623,7 @@ namespace InforumBackend.Controllers
 
                     if (!result.Succeeded)
                     {
+                        _logger.LogError("Password not changed.");
                         return StatusCode(StatusCodes.Status400BadRequest, new
                         {
                             Status = StatusCodes.Status400BadRequest,
@@ -583,20 +631,25 @@ namespace InforumBackend.Controllers
                         });
                     }
 
+                    _logger.LogInformation("Password changed.");
+
                     return Ok(new
                     {
                         Status = StatusCodes.Status200OK,
                         Message = "Password Changed Successfully!"
                     });
                 }
+
+                _logger.LogError("Access Denied.");
                 return StatusCode(StatusCodes.Status403Forbidden, new
                 {
                     Status = StatusCodes.Status403Forbidden,
                     Message = "You are not authorized to perform this action!"
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -613,6 +666,7 @@ namespace InforumBackend.Controllers
 
                 if (user == null)
                 {
+                    _logger.LogError("User not found.");
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -642,9 +696,9 @@ namespace InforumBackend.Controllers
                     userRole = userRole
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -664,9 +718,9 @@ namespace InforumBackend.Controllers
                     roles = rolesList
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -685,6 +739,8 @@ namespace InforumBackend.Controllers
 
                 if (user == null || newRole == null)
                 {
+                    _logger.LogError("User or Role not found.");
+
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -698,6 +754,7 @@ namespace InforumBackend.Controllers
                     var roleAddition = await userManager.AddToRoleAsync(user, newRole.Name);
                     if (roleAddition.Succeeded)
                     {
+                        _logger.LogInformation("User Role updated.");
                         return Ok(new
                         {
                             Status = StatusCodes.Status200OK,
@@ -706,6 +763,7 @@ namespace InforumBackend.Controllers
                     }
                 }
 
+                _logger.LogError("User Role not updated.");
                 return BadRequest(new
                 {
                     Status = StatusCodes.Status400BadRequest,
@@ -713,8 +771,9 @@ namespace InforumBackend.Controllers
                 });
 
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -731,6 +790,7 @@ namespace InforumBackend.Controllers
 
                 if (user == null)
                 {
+                    _logger.LogError("User not found.");
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -746,6 +806,7 @@ namespace InforumBackend.Controllers
                     var result = await userManager.UpdateAsync(user);
                     if (result.Succeeded)
                     {
+                        _logger.LogInformation("User Un-Restricted.");
                         return Ok(new
                         {
                             Status = StatusCodes.Status200OK,
@@ -754,6 +815,7 @@ namespace InforumBackend.Controllers
                     }
                     else
                     {
+                        _logger.LogError("Failed to Un-Restrict User.");
                         return BadRequest(new
                         {
                             Status = StatusCodes.Status400BadRequest,
@@ -768,6 +830,7 @@ namespace InforumBackend.Controllers
                     var result = await userManager.UpdateAsync(user);
                     if (result.Succeeded)
                     {
+                        _logger.LogInformation("User Restricted.");
                         return Ok(new
                         {
                             Status = StatusCodes.Status200OK,
@@ -776,6 +839,7 @@ namespace InforumBackend.Controllers
                     }
                     else
                     {
+                        _logger.LogError("Failed to Restrict User.");
                         return StatusCode(StatusCodes.Status400BadRequest, new
                         {
                             Status = StatusCodes.Status400BadRequest,
@@ -784,8 +848,9 @@ namespace InforumBackend.Controllers
                     }
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -809,10 +874,159 @@ namespace InforumBackend.Controllers
                     });
                 }
 
+                // find Default User
+                var defaultUser = await userManager.FindByEmailAsync("defaultUser@mail.com");
+
+                // find User's all BlogPosts
+                var userBlogPosts = await _context.BlogPost.Where(b => b.AuthorId == user.Id).ToListAsync();
+
+                if (userBlogPosts.Count > 0)
+                {
+                    // if User has BlogPosts, change their Author to Default User
+                    foreach (var blogPost in userBlogPosts)
+                    {
+                        blogPost.AuthorId = defaultUser.Id;
+                        _context.Update(blogPost);
+                    }
+
+                    // save changes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User: {0} BlogPosts Author changed to Default User.", user.Id);
+                }
+
+                // find User's all Comments
+                var userComments = await _context.Comment.Where(c => c.UserId == user.Id).ToListAsync();
+
+                if (userComments.Count > 0)
+                {
+                    // if User has Comments, change their Author to Default User
+                    foreach (var comment in userComments)
+                    {
+                        comment.UserId = defaultUser.Id;
+                        _context.Update(comment);
+                    }
+
+                    // save changes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User: {0} Comments Author changed to Default User.", user.Id);
+                }
+
+                // Find User's all Subcomments
+                var userSubComments = await _context.SubComment.Where(sc => sc.UserId == user.Id).ToListAsync();
+
+                if (userSubComments.Count > 0)
+                {
+                    // if User has Subcomments, change their Author to Default User
+                    foreach (var subComment in userSubComments)
+                    {
+                        subComment.UserId = defaultUser.Id;
+                        _context.Update(subComment);
+                    }
+
+                    // save changes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User: {0} SubComments Author changed to Default User.", user.Id);
+                }
+
+                // Find User's all Stars on BlogPosts
+                var userStars = await _context.Star.Where(s => s.UserId == user.Id).ToListAsync();
+
+                if (userStars.Count > 0)
+                {
+                    // if User has Stars, remove them
+                    foreach (var star in userStars)
+                    {
+                        _context.Remove(star);
+                    }
+
+                    // save changes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User: {0} Stars removed.", user.Id);
+                }
+
+                // Find User's all ForumQueries
+                var userForumQueries = await _context.ForumQuery.Where(fq => fq.AuthorId == user.Id).ToListAsync();
+
+                if (userForumQueries.Count > 0)
+                {
+                    // if User has ForumQueries, change their Author to Default User
+                    foreach (var forumQuery in userForumQueries)
+                    {
+                        forumQuery.AuthorId = defaultUser.Id;
+                        _context.Update(forumQuery);
+                    }
+
+                    // save changes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User: {0} ForumQueries Author changed to Default User.", user.Id);
+                }
+
+                // Find User's all ForumAnswers
+                var userForumAnswers = await _context.ForumAnswer.Where(fa => fa.UserId == user.Id).ToListAsync();
+
+                if (userForumAnswers.Count > 0)
+                {
+                    // if User has ForumAnswers, change their Author to Default User
+                    foreach (var forumAnswer in userForumAnswers)
+                    {
+                        forumAnswer.UserId = defaultUser.Id;
+                        _context.Update(forumAnswer);
+                    }
+
+                    // save changes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User: {0} ForumAnswers Author changed to Default User.", user.Id);
+                }
+
+                // Find User's all ForumSubAnswers
+                var userForumSubAnswers = await _context.ForumSubAnswer.Where(fsa => fsa.UserId == user.Id).ToListAsync();
+
+                if (userForumSubAnswers.Count > 0)
+                {
+                    // if User has ForumSubAnswers, change their Author to Default User
+                    foreach (var forumSubAnswer in userForumSubAnswers)
+                    {
+                        forumSubAnswer.UserId = defaultUser.Id;
+                        _context.Update(forumSubAnswer);
+                    }
+
+                    // save changes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User: {0} ForumSubAnswers Author changed to Default User.", user.Id);
+                }
+
+                // Find User's all Votes on Forum Queries
+                var userLikes = await _context.Vote.Where(l => l.UserId == user.Id).ToListAsync();
+
+                if (userLikes.Count > 0)
+                {
+                    // if User has Votes, remove them
+                    foreach (var like in userLikes)
+                    {
+                        _context.Remove(like);
+                    }
+
+                    // save changes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User: {0} Votes removed.", user.Id);
+                }
+
+
                 var result = await userManager.DeleteAsync(user);
 
                 if (result.Succeeded)
                 {
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("User Deleted.");
+
                     return Ok(new
                     {
                         Status = StatusCodes.Status200OK,
@@ -821,6 +1035,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError("Failed to Delete User.");
                     return BadRequest(new
                     {
                         Status = StatusCodes.Status400BadRequest,
@@ -828,8 +1043,9 @@ namespace InforumBackend.Controllers
                     });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
