@@ -166,7 +166,7 @@ namespace InforumBackend.Controllers
                 }
 
                 // Assign role to Default User
-                await userManager.AddToRoleAsync(defaultUser, UserRoles.User);
+                await userManager.AddToRoleAsync(defaultUser, UserRoles.Editor);
                 _logger.LogInformation("Default User Created.");
 
                 // Initialize base Category
