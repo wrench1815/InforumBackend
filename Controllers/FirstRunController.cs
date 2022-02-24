@@ -39,6 +39,7 @@ namespace InforumBackend.Controllers
 
                 if (firstRun == null)
                 {
+                    _logger.LogInformation("First Run not Performed");
                     return Ok(new
                     {
                         Status = StatusCodes.Status200OK,
