@@ -13,9 +13,12 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public ForumAnswerController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public ForumAnswerController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("ForumAnswerController");
         }
 
         // GET: api/ForumAnswer
@@ -46,9 +49,9 @@ namespace InforumBackend.Controllers
                     Pagination = paginationMetadata
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -63,6 +66,7 @@ namespace InforumBackend.Controllers
 
                 if (forumAnswer == null)
                 {
+                    _logger.LogError("ForumAnswer with id {0} not found", id);
                     return NotFound(new
                     {
                         Status = "Error",
@@ -72,8 +76,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(forumAnswer);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -84,20 +89,22 @@ namespace InforumBackend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutForumAnswer(long id, ForumAnswer forumAnswer)
         {
-            if (id != forumAnswer.Id)
-            {
-                return BadRequest(new
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "Failed to update Answer. Check if the Data is Correct."
-                });
-            }
-
-            _context.Entry(forumAnswer).State = EntityState.Modified;
-
             try
             {
+                if (id != forumAnswer.Id)
+                {
+                    _logger.LogError("ForumAnswer with id {0} not found", id);
+                    return BadRequest(new
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "Failed to update Answer. Check if the Data is Correct."
+                    });
+                }
+
+                _context.Entry(forumAnswer).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("ForumAnswer with id {0} updated", id);
 
                 return Ok(new
                 {
@@ -105,10 +112,11 @@ namespace InforumBackend.Controllers
                     Message = "Answer Updates Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 if (!ForumAnswerExists(id))
                 {
+                    _logger.LogError("ForumAnswer with id {0} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -117,6 +125,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError(ex.ToString());
                     return BadRequest();
                 }
             }
@@ -134,14 +143,17 @@ namespace InforumBackend.Controllers
                 _context.ForumAnswer.Add(forumAnswer);
                 await _context.SaveChangesAsync(); // save the object
 
+                _logger.LogInformation("ForumAnswer created Successfully");
+
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
                     Message = "Answer added Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -151,21 +163,34 @@ namespace InforumBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteForumAnswer(long id)
         {
-            var forumAnswer = await _context.ForumAnswer.FindAsync(id);
-            if (forumAnswer == null)
-            {
-                return NotFound(new
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Message = "Answer not found."
-
-                });
-            }
-
             try
             {
+                var forumAnswer = await _context.ForumAnswer.FindAsync(id);
+
+                if (forumAnswer == null)
+                {
+                    _logger.LogError("ForumAnswer with id {0} not found", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Answer not found."
+
+                    });
+                }
+
+                // Get ForumSubAnswers of ForumAnswer and delete them
+                var forumSubAnswers = _context.ForumSubAnswer.Where(f => f.QueryAnswerId == id);
+
+                if (forumSubAnswers != null)
+                {
+                    _context.ForumSubAnswer.RemoveRange(forumSubAnswers);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("ForumSubAnswer of ForumAnswer with id {0} deleted", id);
+                }
+
                 _context.ForumAnswer.Remove(forumAnswer);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("ForumAnswer with id {0} deleted", id);
 
                 return Ok(new
                 {
@@ -173,8 +198,9 @@ namespace InforumBackend.Controllers
                     Message = "Answer deleted successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
