@@ -300,7 +300,7 @@ namespace InforumBackend.Controllers
 
                         blogPost.Star--;
 
-                        _logger.LogInformation("Star Count of BlogPostId: {0} updated.", starModel.BlogPostId);
+                        _logger.LogInformation("Star Count of BlogPostId: {0} Decremented Successfully.", starModel.BlogPostId);
 
                         // Save Changes to the Database
                         await _context.SaveChangesAsync();
@@ -327,7 +327,7 @@ namespace InforumBackend.Controllers
 
                         blogPost.Star++;
 
-                        _logger.LogInformation("Star Count of BlogPostId: {0} updated.", starModel.BlogPostId);
+                        _logger.LogInformation("Star Count of BlogPostId: {0} incremented Successfully.", starModel.BlogPostId);
 
                         // Save Changes to the Database
                         await _context.SaveChangesAsync();
