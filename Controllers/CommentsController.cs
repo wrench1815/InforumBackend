@@ -13,9 +13,12 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public CommentsController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public CommentsController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("CommentsController");
         }
 
         // GET: api/Comments
@@ -26,10 +29,12 @@ namespace InforumBackend.Controllers
             {
                 IOrderedQueryable<Comment> comments;
 
+                // Get Comments by PostId and sort by Date Posted
                 if (postId != 0)
                 {
                     comments = _context.Comment.Where(co => co.PostId == postId).OrderByDescending(co => co.DatePosted);
                 }
+                // Get Comments and sort by Date Posted
                 else
                 {
                     comments = _context.Comment.OrderByDescending(co => co.DatePosted);
@@ -46,9 +51,9 @@ namespace InforumBackend.Controllers
                     Pagination = paginationMetadata
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -63,6 +68,7 @@ namespace InforumBackend.Controllers
 
                 if (comment == null)
                 {
+                    _logger.LogError("Comment of id: {0} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -72,8 +78,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(comment);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -84,19 +91,20 @@ namespace InforumBackend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutComment(long id, Comment comment)
         {
-            if (id != comment.Id)
-            {
-                return BadRequest(new
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "Failed to update comment. Check if the Data is Correct."
-                });
-            }
-
-            _context.Entry(comment).State = EntityState.Modified;
-
             try
             {
+                if (id != comment.Id)
+                {
+                    _logger.LogError("Comment of id: {0} not found", id);
+                    return BadRequest(new
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "Failed to update comment. Check if the Data is Correct."
+                    });
+                }
+
+                _context.Entry(comment).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
 
                 return Ok(new
@@ -105,10 +113,11 @@ namespace InforumBackend.Controllers
                     Message = "Comment Updated Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 if (!CommentExists(id))
                 {
+                    _logger.LogError("Comment of id: {0} not found", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -118,6 +127,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError(ex.ToString());
                     return BadRequest();
                 }
             }
@@ -135,14 +145,16 @@ namespace InforumBackend.Controllers
                 _context.Comment.Add(comment);
                 await _context.SaveChangesAsync(); // save the object
 
+                _logger.LogInformation("Comment created Successfully.");
                 return StatusCode(StatusCodes.Status201Created, new
                 {
                     Status = StatusCodes.Status201Created,
                     Message = "Comment Added Succesfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -152,21 +164,36 @@ namespace InforumBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComment(long id)
         {
-            var comment = await _context.Comment.FindAsync(id);
-            if (comment == null)
-            {
-                return NotFound(new
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Message = "Comment not found."
-
-                });
-            }
-
             try
             {
+                var comment = await _context.Comment.FindAsync(id);
+                if (comment == null)
+                {
+                    _logger.LogError("Comment of id: {0} not found", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Comment not found."
+
+                    });
+                }
+
+                // find the subcomments of the this comment
+                var subcomments = _context.SubComment.Where(sc => sc.CommentId == id);
+
+                if (subcomments != null)
+                {
+                    // remove the subcomments
+                    _context.SubComment.RemoveRange(subcomments);
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("Subcomments of Comment with id: {0} deleted Successfully.", id);
+                }
+
                 _context.Comment.Remove(comment);
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Comment deleted Successfully.");
 
                 return Ok(new
                 {
@@ -174,8 +201,9 @@ namespace InforumBackend.Controllers
                     Message = "Comment deleted successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
