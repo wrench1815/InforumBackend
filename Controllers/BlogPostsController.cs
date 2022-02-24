@@ -14,9 +14,12 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public BlogPostsController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public BlogPostsController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("BlogPostsController");
         }
 
         // GET: api/BlogPosts
@@ -27,18 +30,22 @@ namespace InforumBackend.Controllers
             {
                 IOrderedQueryable<BlogPost> blogPosts;
 
+                // Find Posts by UserId and sort by Star
                 if (starSort && !String.IsNullOrEmpty(userId))
                 {
                     blogPosts = _context.BlogPost.Where(bp => bp.AuthorId == userId).Include(bp => bp.Category).OrderByDescending(bp => bp.Star);
                 }
+                // Find Posts by UserId and sort by DatePosted
                 else if (!String.IsNullOrEmpty(userId))
                 {
                     blogPosts = _context.BlogPost.Where(bp => bp.AuthorId == userId).Include(bp => bp.Category).OrderByDescending(bp => bp.DatePosted);
                 }
+                // Get all Posts and sort by Star
                 else if (starSort)
                 {
                     blogPosts = _context.BlogPost.Include(bp => bp.Category).OrderByDescending(bp => bp.Star);
                 }
+                // Get all Posts and sort bt DatePosted
                 else
                 {
                     blogPosts = _context.BlogPost.Include(bp => bp.Category).OrderByDescending(bp => bp.DatePosted);
@@ -55,9 +62,9 @@ namespace InforumBackend.Controllers
                     pagination = paginationMetadata
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -72,6 +79,7 @@ namespace InforumBackend.Controllers
 
                 if (blogPost == null)
                 {
+                    _logger.LogInformation("BlogPost of id: {0} not found.", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -81,9 +89,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(blogPost);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -98,6 +106,7 @@ namespace InforumBackend.Controllers
 
                 if (blogPost == null)
                 {
+                    _logger.LogInformation("BlogPost of slug: {0} not found.", slug);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -107,8 +116,9 @@ namespace InforumBackend.Controllers
 
                 return Ok(blogPost);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -121,6 +131,7 @@ namespace InforumBackend.Controllers
         {
             if (id != blogPost.Id)
             {
+                _logger.LogInformation("BlogPost of id: {0} not found.", id);
                 return BadRequest(new
                 {
                     Status = StatusCodes.Status400BadRequest,
@@ -128,14 +139,15 @@ namespace InforumBackend.Controllers
                 });
             }
 
-            // generate slug based on the PUT data
-            blogPost.Slug = generateSlug(blogPost.Title, id);
-
-            _context.Entry(blogPost).State = EntityState.Modified;
-
             try
             {
+                // generate slug based on the PUT data
+                blogPost.Slug = generateSlug(blogPost.Title, id);
+
+                _context.Entry(blogPost).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("BlogPost of id: {0} updated.", id);
 
                 return Ok(new
                 {
@@ -143,10 +155,11 @@ namespace InforumBackend.Controllers
                     Message = "Post Updated Successfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 if (!BlogPostExists(id))
                 {
+                    _logger.LogInformation("BlogPost of id: {0} not found.", id);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -155,6 +168,7 @@ namespace InforumBackend.Controllers
                 }
                 else
                 {
+                    _logger.LogError(ex.ToString());
                     return BadRequest();
                 }
             }
@@ -182,6 +196,7 @@ namespace InforumBackend.Controllers
                 _context.Update(blogPost);
 
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("BlogPost created.");
 
                 return StatusCode(StatusCodes.Status201Created, new
                 {
@@ -189,8 +204,9 @@ namespace InforumBackend.Controllers
                     Message = "Post created Sucessfully."
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -201,8 +217,10 @@ namespace InforumBackend.Controllers
         public async Task<IActionResult> DeleteBlogPost(long id)
         {
             var blogPost = await _context.BlogPost.FindAsync(id);
+
             if (blogPost == null)
             {
+                _logger.LogInformation("BlogPost of id: {0} not found.", id);
                 return NotFound(new
                 {
                     Status = StatusCodes.Status404NotFound,
@@ -215,6 +233,7 @@ namespace InforumBackend.Controllers
             {
                 _context.BlogPost.Remove(blogPost);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("BlogPost of id: {0} deleted.", id);
 
                 return Ok(new
                 {
@@ -222,9 +241,9 @@ namespace InforumBackend.Controllers
                     Message = "Post deleted successfully"
                 });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -244,6 +263,7 @@ namespace InforumBackend.Controllers
                 // Else Continue
                 if (blogPost == null)
                 {
+                    _logger.LogInformation("BlogPost of id: {0} not found.", starModel.BlogPostId);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -263,11 +283,16 @@ namespace InforumBackend.Controllers
                     // -1 the Star count if Star Entry Successfully Removed
                     if (removeStar != null)
                     {
-                        blogPost.Star--;
-                    }
+                        _logger.LogInformation("Star Entry of BlogPostId: {0} and UserId: {1} removed.", starModel.BlogPostId, starModel.UserId);
 
-                    // Save Changes to the Database
-                    await _context.SaveChangesAsync();
+                        blogPost.Star--;
+
+                        _logger.LogInformation("Star Count of BlogPostId: {0} updated.", starModel.BlogPostId);
+
+                        // Save Changes to the Database
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Database State Saved");
+                    }
 
                     // Retutrn OK
                     return Ok(new
@@ -285,12 +310,16 @@ namespace InforumBackend.Controllers
                     // +1 the count if Star Entry Successfully Added
                     if (addStar != null)
                     {
+                        _logger.LogInformation("Star Entry of BlogPostId: {0} and UserId: {1} added.", starModel.BlogPostId, starModel.UserId);
+
                         blogPost.Star++;
+
+                        _logger.LogInformation("Star Count of BlogPostId: {0} updated.", starModel.BlogPostId);
+
+                        // Save Changes to the Database
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Database State Saved");
                     }
-
-                    // Save Changes to the Database
-                    await _context.SaveChangesAsync();
-
                     // Retutrn OK
                     return Ok(new
                     {
@@ -299,8 +328,9 @@ namespace InforumBackend.Controllers
                     });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -320,6 +350,7 @@ namespace InforumBackend.Controllers
                 // Else Continue
                 if (blogPost == null)
                 {
+                    _logger.LogInformation("BlogPost of id: {0} not found.", starModel.BlogPostId);
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
@@ -330,6 +361,8 @@ namespace InforumBackend.Controllers
                 // Check if the Star Entry Exist or not
                 var starExist = _context.Star.Any(s => s.BlogPostId == starModel.BlogPostId && s.UserId == starModel.UserId);
 
+                _logger.LogInformation("Star Entry of BlogPostId: {0} and UserId: {1} found.", starModel.BlogPostId, starModel.UserId);
+
                 // Retutrn OK
                 return Ok(new
                 {
@@ -337,8 +370,9 @@ namespace InforumBackend.Controllers
                 });
 
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 return BadRequest();
             }
         }
@@ -368,6 +402,8 @@ namespace InforumBackend.Controllers
             slug = Regex.Replace(slug, @"\s", "-");
             // concatenate slug and id
             slug = slug + "-" + id;
+
+            _logger.LogInformation("Slug generated for title: {0} and id: {1}", title, id);
 
             return slug;
         }
