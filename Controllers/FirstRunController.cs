@@ -35,7 +35,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var firstRun = await _context.FirstRun.FirstOrDefaultAsync();
+                var firstRun = await _context.FirstRun.OrderBy(x => x.Id).FirstOrDefaultAsync();
 
                 if (firstRun == null)
                 {
@@ -75,7 +75,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var firstRun = await _context.FirstRun.FirstOrDefaultAsync();
+                var firstRun = await _context.FirstRun.OrderBy(x => x.Id).FirstOrDefaultAsync();
 
                 if (firstRun != null)
                 {
@@ -148,8 +148,9 @@ namespace InforumBackend.Controllers
                     DOB = ""
                 };
 
-                // Generate a random password
-                string defaultPassword = Guid.NewGuid().ToString().Substring(0, 8);
+                // Generate a random password with a minimum of 8 characters having 1 upper case, 1 lower case, 1 number and 1 special character
+                string defaultPassword = Regex.Replace(Guid.NewGuid().ToString(), @"[^a-zA-Z0-9]", m => "") + "!@#$&()AT";
+
 
                 // Create the default user
                 var createDefaultUser = await userManager.CreateAsync(defaultUser, defaultPassword);
