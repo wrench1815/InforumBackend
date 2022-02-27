@@ -68,6 +68,278 @@ namespace InforumBackend.Controllers
             }
         }
 
+        // GET: api/GetFirstRun/default_user
+        [Authorize(Roles = "Admin")]
+        [HttpGet("default_user")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<FirstRun>>> DefaultUserStatus()
+        {
+            try
+            {
+                var defaultUser = await userManager.FindByEmailAsync("defaultUser@mail.com");
+
+                if (defaultUser == null)
+                {
+                    _logger.LogInformation("Default user does not exist.");
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Default User does not exist.",
+                        exist = false
+                    }
+                    );
+                }
+                else
+                {
+                    _logger.LogInformation("Default user exist.");
+
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Default User Exist",
+                        exist = true
+                    }
+                    );
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
+        }
+
+        // GET: api/GetFirstRun/roles
+        [Authorize(Roles = "Admin")]
+        [HttpGet("roles")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<FirstRun>>> RolesStatus()
+        {
+            try
+            {
+                var adminRole = await roleManager.FindByNameAsync("Admin");
+                var userRole = await roleManager.FindByNameAsync("User");
+                var editorRole = await roleManager.FindByNameAsync("Editor");
+
+                bool adminExist = false;
+                bool userExist = false;
+                bool editorExist = false;
+
+                if (adminRole != null)
+                {
+                    _logger.LogInformation("Admin Role Exist.");
+                    adminExist = true;
+                }
+                else
+                {
+                    _logger.LogInformation("Admin Role does not exist.");
+                    adminExist = false;
+                }
+
+                if (userRole != null)
+                {
+                    _logger.LogInformation("User Role Exist.");
+                    userExist = true;
+                }
+                else
+                {
+                    _logger.LogInformation("User Role does not exist.");
+                    userExist = false;
+                }
+
+                if (editorRole != null)
+                {
+                    _logger.LogInformation("Editor Role Exist.");
+                    editorExist = true;
+                }
+                else
+                {
+                    _logger.LogInformation("Editor Role does not exist.");
+                    editorExist = false;
+                }
+
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Default User does not exist.",
+                    adminExist = adminExist,
+                    userExist = userExist,
+                    editorExist = editorExist
+                }
+                );
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
+        }
+
+        // GET: api/GetFirstRun/default_category
+        [Authorize(Roles = "Admin")]
+        [HttpGet("default_category")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<FirstRun>>> DefaultCategoryStatus()
+        {
+            try
+            {
+                var defaultCategory = await _context.Category.Where(x => x.Name == "Default").FirstOrDefaultAsync();
+
+                if (defaultCategory == null)
+                {
+                    _logger.LogInformation("Default Category does not exist.");
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Default Category does not exist.",
+                        exist = false
+                    }
+                    );
+                }
+                else
+                {
+                    _logger.LogInformation("Default Category exist.");
+
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Default Category Exist",
+                        exist = true
+                    }
+                    );
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
+        }
+
+        // GET: api/GetFirstRun/add/roles
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        [Route("add/default_user")]
+        public async Task<ActionResult<FirstRun>> AddDefaultUser()
+        {
+            try
+            {
+                var adminRole = await roleManager.FindByNameAsync("Admin");
+                var userRole = await roleManager.FindByNameAsync("User");
+                var editorRole = await roleManager.FindByNameAsync("Editor");
+
+                if (adminRole == null)
+                {
+                    adminRole = new IdentityRole("Admin");
+                    await roleManager.CreateAsync(adminRole);
+
+                    _logger.LogInformation("Admin Role Created.");
+                }
+
+                if (userRole == null)
+                {
+                    userRole = new IdentityRole("User");
+                    await roleManager.CreateAsync(userRole);
+
+                    _logger.LogInformation("User Role Created.");
+                }
+
+                if (editorRole == null)
+                {
+                    editorRole = new IdentityRole("Editor");
+                    await roleManager.CreateAsync(editorRole);
+
+                    _logger.LogInformation("Editor Role Created.");
+                }
+
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Roles Initialized.",
+                }
+                );
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
+        }
+
+        // GET: api/GetFirstRun/add/roles
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        [Route("add/roles")]
+        public async Task<ActionResult<FirstRun>> AddRoles()
+        {
+            try
+            {
+                var defaultUser = await userManager.FindByEmailAsync("defaultUser@mail.com");
+
+                if (defaultUser == null)
+                {
+                    ApplicationUser user = new ApplicationUser
+                    {
+                        UserName = "defaultUser@mail.com",
+                        Email = "defaultUser@mail.com",
+                        SecurityStamp = Guid.NewGuid().ToString(),
+                        FirstName = "Default",
+                        LastName = "User",
+                        Gender = Genders.Male,
+                        ProfileImage = "https://res.cloudinary.com/inforum/image/upload/v1645625776/Defaults/profile_image_dummy_oawg87.png",
+                        IsRestricted = false,
+                        Address = "Void City, Near Eye, Black Hole",
+                        DOB = ""
+                    };
+
+                    // Generate a random password with a minimum of 8 characters having 1 upper case, 1 lower case, 1 number and 1 special character
+                    string defaultPassword = Regex.Replace(Guid.NewGuid().ToString(), @"[^a-zA-Z0-9]", m => "") + "!@#$&()AT";
+
+
+                    // Create the default user
+                    var createUser = await userManager.CreateAsync(user, defaultPassword);
+
+                    if (!createUser.Succeeded)
+                    {
+                        _logger.Log(LogLevel.Error, createUser.Errors.ToString());
+
+                        return BadRequest(new
+                        {
+                            Status = StatusCodes.Status400BadRequest,
+                            Message = "Default User Creation Failed."
+                        });
+                    }
+
+                    // Assign role to Default User
+                    await userManager.AddToRoleAsync(defaultUser, UserRoles.Editor);
+
+                    _logger.LogInformation("Default User Created.");
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Default User Created.",
+                    });
+
+                }
+                else
+                {
+                    _logger.LogInformation("Default User Exist.");
+
+                    return Ok(new
+                    {
+                        Status = StatusCodes.Status200OK,
+                        Message = "Default User Exist",
+                    });
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
+        }
+
         // POST: api/GetFirstRun
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
