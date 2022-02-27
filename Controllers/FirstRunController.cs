@@ -71,7 +71,6 @@ namespace InforumBackend.Controllers
         // GET: api/GetFirstRun/default_user
         [Authorize(Roles = "Admin")]
         [HttpGet("default_user")]
-        [HttpGet]
         public async Task<ActionResult<IEnumerable<FirstRun>>> DefaultUserStatus()
         {
             try
@@ -112,7 +111,6 @@ namespace InforumBackend.Controllers
         // GET: api/GetFirstRun/roles
         [Authorize(Roles = "Admin")]
         [HttpGet("roles")]
-        [HttpGet]
         public async Task<ActionResult<IEnumerable<FirstRun>>> RolesStatus()
         {
             try
@@ -179,7 +177,6 @@ namespace InforumBackend.Controllers
         // GET: api/GetFirstRun/default_category
         [Authorize(Roles = "Admin")]
         [HttpGet("default_category")]
-        [HttpGet]
         public async Task<ActionResult<IEnumerable<FirstRun>>> DefaultCategoryStatus()
         {
             try
@@ -218,7 +215,6 @@ namespace InforumBackend.Controllers
         }
 
         // GET: api/GetFirstRun/add/roles
-        [HttpGet]
         [Authorize(Roles = "Admin")]
         [Route("add/roles")]
         public async Task<ActionResult<FirstRun>> AddRoles()
@@ -268,7 +264,6 @@ namespace InforumBackend.Controllers
         }
 
         // GET: api/GetFirstRun/add/default_user
-        [HttpGet]
         [Authorize(Roles = "Admin")]
         [Route("add/default_user")]
         public async Task<ActionResult<FirstRun>> AddDefaultUser()
