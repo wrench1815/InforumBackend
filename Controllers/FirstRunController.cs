@@ -159,7 +159,6 @@ namespace InforumBackend.Controllers
                 return Ok(new
                 {
                     Status = StatusCodes.Status200OK,
-                    Message = "Default User does not exist.",
                     adminExist = adminExist,
                     userExist = userExist,
                     editorExist = editorExist
@@ -181,7 +180,7 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var defaultCategory = await _context.Category.Where(x => x.Name == "Default").FirstOrDefaultAsync();
+                var defaultCategory = await _context.Category.Where(x => x.Name == "General").FirstOrDefaultAsync();
 
                 if (defaultCategory == null)
                 {
