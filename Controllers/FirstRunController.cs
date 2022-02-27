@@ -116,16 +116,28 @@ namespace InforumBackend.Controllers
                     });
                 }
 
-                // Check if roles Exist, if not, create them unless skip
-                if (!await roleManager.RoleExistsAsync(UserRoles.Admin) && !await roleManager.RoleExistsAsync(UserRoles.User) && !await roleManager.RoleExistsAsync(UserRoles.Editor))
+                // Check if Admin Role Exist, if not, create it unless skip
+                if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
                 {
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
 
+                    _logger.LogInformation("Admin Role Created.");
+                }
+
+                // Check if User Role Exist, if not, create it unless skip
+                if (!await roleManager.RoleExistsAsync(UserRoles.User))
+                {
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
 
+                    _logger.LogInformation("User Role Created.");
+                }
+
+                // Check if Editor Role Exist, if not, create it unless skip
+                if (!await roleManager.RoleExistsAsync(UserRoles.Editor))
+                {
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Editor));
 
-                    _logger.LogInformation("Roles Created.");
+                    _logger.LogInformation("Editor Role Created.");
                 }
 
                 // Add newAdmin to Admin Role
