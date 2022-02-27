@@ -220,8 +220,8 @@ namespace InforumBackend.Controllers
         // GET: api/GetFirstRun/add/roles
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        [Route("add/default_user")]
-        public async Task<ActionResult<FirstRun>> AddDefaultUser()
+        [Route("add/roles")]
+        public async Task<ActionResult<FirstRun>> AddRoles()
         {
             try
             {
@@ -267,11 +267,11 @@ namespace InforumBackend.Controllers
             }
         }
 
-        // GET: api/GetFirstRun/add/roles
+        // GET: api/GetFirstRun/add/default_user
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        [Route("add/roles")]
-        public async Task<ActionResult<FirstRun>> AddRoles()
+        [Route("add/default_user")]
+        public async Task<ActionResult<FirstRun>> AddDefaultUser()
         {
             try
             {
