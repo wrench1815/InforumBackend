@@ -269,11 +269,11 @@ namespace InforumBackend.Controllers
         {
             try
             {
-                var defaultUser = await userManager.FindByEmailAsync("defaultUser@mail.com");
+                var defaultUserExist = await userManager.FindByEmailAsync("defaultUser@mail.com");
 
-                if (defaultUser == null)
+                if (defaultUserExist == null)
                 {
-                    ApplicationUser user = new ApplicationUser
+                    ApplicationUser defaultUser = new ApplicationUser
                     {
                         UserName = "defaultUser@mail.com",
                         Email = "defaultUser@mail.com",
@@ -292,11 +292,11 @@ namespace InforumBackend.Controllers
 
 
                     // Create the default user
-                    var createUser = await userManager.CreateAsync(user, defaultPassword);
+                    var createDefaultUser = await userManager.CreateAsync(defaultUser, defaultPassword);
 
-                    if (!createUser.Succeeded)
+                    if (!createDefaultUser.Succeeded)
                     {
-                        _logger.Log(LogLevel.Error, createUser.Errors.ToString());
+                        _logger.Log(LogLevel.Error, createDefaultUser.Errors.ToString());
 
                         return BadRequest(new
                         {
@@ -307,8 +307,8 @@ namespace InforumBackend.Controllers
 
                     // Assign role to Default User
                     await userManager.AddToRoleAsync(defaultUser, UserRoles.Editor);
-
                     _logger.LogInformation("Default User Created.");
+
                     return Ok(new
                     {
                         Status = StatusCodes.Status200OK,
