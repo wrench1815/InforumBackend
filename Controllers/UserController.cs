@@ -867,10 +867,21 @@ namespace InforumBackend.Controllers
 
                 if (user == null)
                 {
+                    _logger.LogError("User not found.");
                     return NotFound(new
                     {
                         Status = StatusCodes.Status404NotFound,
                         Message = "User not found"
+                    });
+                }
+
+                if (user.UserName == "defaultUser@mail.com")
+                {
+                    _logger.LogError("Cannot delete default user.");
+                    return BadRequest(new
+                    {
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "Cannot delete default user"
                     });
                 }
 
