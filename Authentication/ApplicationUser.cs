@@ -16,8 +16,21 @@ namespace InforumBackend.Authentication
         public string LastName { get; set; }
 
         [PersonalData]
+        public bool IsRestricted { get; set; }
+
+        [PersonalData]
+        public string ProfileImage { get; set; }
+
+
+        [PersonalData]
         [Column(TypeName = "nvarchar(20)")]
         public Genders Gender { get; set; }
+
+        [PersonalData]
+        public string DOB { get; set; }
+
+        [PersonalData]
+        public string Address { get; set; }
 
         [PersonalData]
         public DateTime DateJoined { get; set; }

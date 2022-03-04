@@ -5,18 +5,20 @@ namespace InforumBackend.Authentication
 {
     public class UpdateUser
     {
-        [Required(ErrorMessage = "First Name is required")]
         public string FirstName { get; set; }
 
-        [Required(ErrorMessage = "Last Name is required")]
         public string LastName { get; set; }
 
-        [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Gender is required")]
+        public string ProfileImage { get; set; }
+
         [Column(TypeName = "nvarchar(20)")]
         public Genders Gender { get; set; }
+
+        public string DOB { get; set; }
+
+        public string Address { get; set; }
 
     }
 }

@@ -12,30 +12,56 @@ namespace InforumBackend.Controllers
     {
         private readonly InforumBackendContext _context;
 
-        public HomeController(InforumBackendContext context)
+        private readonly ILogger _logger;
+
+        public HomeController(InforumBackendContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger("HomeController");
         }
 
         // GET: api/Home
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Home>>> GetHome()
         {
-            return await _context.Home.ToListAsync();
+            try
+            {
+                var homeData = await _context.Home.ToListAsync();
+
+                return Ok(homeData);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
         }
 
         // GET: api/Home/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Home>> GetHome(long id)
         {
-            var home = await _context.Home.FindAsync(id);
-
-            if (home == null)
+            try
             {
-                return NotFound();
-            }
+                var home = await _context.Home.FindAsync(id);
 
-            return home;
+                if (home == null)
+                {
+                    _logger.LogInformation("Home of id: {0} not found.", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Home data not found."
+                    });
+                }
+
+                return Ok(home);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
         }
 
         // PUT: api/Home/5
@@ -46,7 +72,12 @@ namespace InforumBackend.Controllers
         {
             if (id != home.Id)
             {
-                return BadRequest();
+                _logger.LogInformation("Home of id: {0} not found.", id);
+                return BadRequest(new
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "Check if Home data is Valid or not."
+                });
             }
 
             _context.Entry(home).State = EntityState.Modified;
@@ -54,20 +85,31 @@ namespace InforumBackend.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Home of id: {0} updated.", id);
+
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Home data updated Successfully."
+                });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (System.Exception ex)
             {
                 if (!HomeExists(id))
                 {
-                    return NotFound();
+                    _logger.LogInformation("Home of id: {0} not found.", id);
+                    return NotFound(new
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Message = "Home does not Exist."
+                    });
                 }
                 else
                 {
-                    throw;
+                    _logger.LogError(ex.ToString());
+                    return BadRequest();
                 }
             }
-
-            return NoContent();
         }
 
         // POST: api/Home
@@ -76,10 +118,24 @@ namespace InforumBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<Home>> PostHome(Home home)
         {
-            _context.Home.Add(home);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Home.Add(home);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetHome", new { id = home.Id }, home);
+                _logger.LogInformation("Home created.");
+
+                return StatusCode(StatusCodes.Status201Created, new
+                {
+                    Status = StatusCodes.Status201Created,
+                    Message = "Home data added Successfully."
+                });
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
         }
 
         // DELETE: api/Home/5
@@ -87,16 +143,30 @@ namespace InforumBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHome(long id)
         {
-            var home = await _context.Home.FindAsync(id);
-            if (home == null)
+            try
             {
-                return NotFound();
+                var home = await _context.Home.FindAsync(id);
+                if (home == null)
+                {
+                    _logger.LogInformation("Home of id: {0} not found.", id);
+                    return NotFound();
+                }
+
+                _context.Home.Remove(home);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Home of id: {0} deleted.", id);
+
+                return Ok(new
+                {
+                    Status = StatusCodes.Status200OK,
+                    Message = "Home deleted Successfully."
+                });
             }
-
-            _context.Home.Remove(home);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return BadRequest();
+            }
         }
 
         private bool HomeExists(long id)

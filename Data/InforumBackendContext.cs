@@ -15,8 +15,6 @@ namespace InforumBackend.Data
         {
         }
 
-        public DbSet<Answer> Answer { get; set; }
-
         public DbSet<BlogPost> BlogPost { get; set; }
 
         public DbSet<Category> Category { get; set; }
@@ -25,9 +23,21 @@ namespace InforumBackend.Data
 
         public DbSet<ContactForm> ContactForm { get; set; }
 
+        public DbSet<FirstRun> FirstRun { get; set; }
+
         public DbSet<Home> Home { get; set; }
 
-        public DbSet<Query> Query { get; set; }
+        public DbSet<ForumAnswer> ForumAnswer { get; set; }
+
+        public DbSet<ForumQuery> ForumQuery { get; set; }
+
+        public DbSet<ForumSubAnswer> ForumSubAnswer { get; set; }
+
+        public DbSet<Star> Star { get; set; }
+
+        public DbSet<SubComment> SubComment { get; set; }
+
+        public DbSet<Vote> Vote { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -4,6 +4,7 @@ using InforumBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InforumBackend.Migrations
 {
     [DbContext(typeof(InforumBackendContext))]
-    partial class InforumBackendContextModelSnapshot : ModelSnapshot
+    [Migration("20220215144043_AddSlugFieldForCategory")]
+    partial class AddSlugFieldForCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,9 +146,6 @@ namespace InforumBackend.Migrations
                     b.Property<string>("Slug")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("Star")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
@@ -234,22 +233,6 @@ namespace InforumBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ContactForm");
-                });
-
-            modelBuilder.Entity("InforumBackend.Models.FirstRun", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
-
-                    b.Property<bool>("IsFinished")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FirstRun");
                 });
 
             modelBuilder.Entity("InforumBackend.Models.ForumAnswer", b =>
@@ -356,7 +339,10 @@ namespace InforumBackend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
-                    b.Property<string>("HeaderImage")
+                    b.Property<string>("HeaderImageLink")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Heading")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SubHeading")
@@ -365,26 +351,6 @@ namespace InforumBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Home");
-                });
-
-            modelBuilder.Entity("InforumBackend.Models.Star", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
-
-                    b.Property<long>("BlogPostId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Star");
                 });
 
             modelBuilder.Entity("InforumBackend.Models.SubComment", b =>
@@ -414,26 +380,6 @@ namespace InforumBackend.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("SubComment");
-                });
-
-            modelBuilder.Entity("InforumBackend.Models.Vote", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
-
-                    b.Property<long>("ForumId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Vote");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
