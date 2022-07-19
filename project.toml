@@ -1,2 +1,2 @@
 [[build.buildpacks]]
-uri = "https://github.com/jincod/dotnetcore-buildpack"
+uri = "https://github.com/jincod/dotnetcore-buildpack/archive/refs/tags/v6.0.100.tar.gz"
