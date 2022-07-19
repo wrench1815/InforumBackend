@@ -25,3 +25,24 @@ jobs:
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           branch: dev
+          
+  deploy2:
+    name: Deploy to Railway
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+
+    steps:
+    - name: checkout Repo
+      uses: actions/checkout@v2.4.2
+      with:
+        ref: dev
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3.1.1
+    - name: Install Railway CLI
+      run: |
+        npm i -g @railway/cli
+    - name: Deploy to Railway
+      run: |
+        RAILWAY_TOKEN=$RAILWAY_TOKEN railway up
